@@ -1,0 +1,39 @@
+# Sahaay Application Settings
+app:
+  name: "Sahaay"
+  full_name: "Sahaay — Emergency Response & Triage System"
+  tagline: "Faster response. Safer communities."
+  version: "1.0.0-hackathon"
+  default_language: "en"
+  supported_languages: ["en", "hi"]
+  demo_mode: true
+  enable_two_person_rule: true
+
+database:
+  sqlite_url: "sqlite:///sahaay.db"
+  postgres_url_env: "DATABASE_URL"
+  echo_sql: false
+
+security:
+  hmac_secret_key_env: "SAHAAY_HMAC_KEY"
+  default_hmac_key: "sahaay-emergency-triage-hmac-salt-2026-bvp"
+  session_timeout_minutes: 480
+  bcrypt_rounds: 12
+  mask_phone_digits_retained: 4
+  mask_transcripts_for_liaison: true
+
+ai_pipeline:
+  provider: "hybrid" # hybrid: rules + deterministic NLP + optional API
+  model_name: "sahaay-hinglish-hybrid-v1"
+  fallback_to_rules_on_failure: true
+  latency_target_seconds: 3.0
+  llm_api_key_env: "GEMINI_API_KEY"
+  openai_api_key_env: "OPENAI_API_KEY"
+
+dispatch_simulation:
+  speed_kmh: 40.0
+  tick_interval_seconds: 5
+  auto_progress_seconds: 15
+  initial_area: "Delhi NCR"
+  center_lat: 28.6139
+  center_lon: 77.2090

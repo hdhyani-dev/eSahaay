@@ -1,0 +1,81 @@
+# Sahaay Versioned Covert Distress Lexicon
+# Version: 1.2.0
+# Reference: FR-4.1, FR-4.2 - Seeded covert signals, indirect language, food order / wrong number patterns
+
+version: "1.2.0"
+approved_by: "Dr. Ananya Sen, Senior Helpline Linguist"
+last_updated: "2026-10-15"
+
+entries:
+  - id: "COV-001"
+    phrase: "pizza"
+    variants: ["pizza order", "pizza delivery", "large pizza", "pija", "peja", "cheese pizza", "ek pizza bhej do"]
+    canonical_meaning: "Covert emergency call disguised as food delivery order"
+    threat_type: "domestic_violence"
+    risk_class: "P1"
+    region: "Pan-India"
+    context_rules:
+      - "Caller calls helpline asking to order food or pizza"
+      - "Caller cannot speak openly because perpetrator is present"
+    suggested_safe_question: "Are you in immediate danger? Say 'Yes' or 'No'."
+    suggested_safe_question_hi: "Kya aap turant khatre mein hain? Sirf 'Haan' ya 'Nahi' bolein."
+
+  - id: "COV-002"
+    phrase: "wrong number"
+    variants: ["galat number", "wrong number hai", "koi galat lag gaya", "sorry wrong number", "wrong no"]
+    canonical_meaning: "Covert distress call disguised as accidental dial when perpetrator enters room"
+    threat_type: "domestic_violence"
+    risk_class: "P1"
+    region: "Pan-India"
+    context_rules:
+      - "Caller dials emergency but speaks 'wrong number' with whispers or background tension"
+    suggested_safe_question: "Can you speak freely right now? Say 'Yes' or 'No'."
+    suggested_safe_question_hi: "Kya aap bina dar ke baat kar sakti hain? 'Haan' ya 'Nahi' bolein."
+
+  - id: "COV-003"
+    phrase: "doctor"
+    variants: ["doctor sahab", "dr saab", "dawai kab aayegi", "appointment lena tha", "injection", "dawa"]
+    canonical_meaning: "Covert signal disguised as medical inquiry under coercion/captivity"
+    threat_type: "trafficking_coercion"
+    risk_class: "P1"
+    region: "North India"
+    context_rules:
+      - "Asks for doctor/medicine in fearful or guarded tone"
+    suggested_safe_question: "Is someone keeping you against your will? Say 'Yes' or 'No'."
+    suggested_safe_question_hi: "Kya kisi ne aapko zabardasti rok rakha hai? 'Haan' ya 'Nahi' bolein."
+
+  - id: "COV-004"
+    phrase: "doodh"
+    variants: ["doodhwale", "doodh ka packet", "milk packet", "ration", "kirana"]
+    canonical_meaning: "Covert distress disguised as household vendor call"
+    threat_type: "domestic_violence"
+    risk_class: "P1"
+    region: "North / Central India"
+    context_rules:
+      - "Talking to emergency helpline as if calling local vendor"
+    suggested_safe_question: "Do you need police assistance at your house? Say 'Yes' or 'No'."
+    suggested_safe_question_hi: "Kya aapko apne ghar par police ki madad chahiye? 'Haan' ya 'Nahi' bolein."
+
+  - id: "COV-005"
+    phrase: "kamre me band"
+    variants: ["kamre mein band", "lock kiya hai", "chhat pe band kar diya", "bahar se taala", "taala laga diya", "locked in room"]
+    canonical_meaning: "Confinement or physical hostage situation"
+    threat_type: "domestic_violence"
+    risk_class: "P0"
+    region: "Pan-India"
+    context_rules:
+      - "Caller or victim forcibly confined inside residence"
+    suggested_safe_question: "Is the perpetrator still outside the door right now?"
+    suggested_safe_question_hi: "Kya wo aadmi abhi darwaze ke bahar hai?"
+
+  - id: "COV-006"
+    phrase: "peechha kar raha hai"
+    variants: ["peecha kar raha hai", "follow kar raha hai", "wahi ladka", "wahi aadmi", "bike se peecha", "stalk kar raha hai"]
+    canonical_meaning: "Active stalking or pursuit in public/transit"
+    threat_type: "stalking_harassment"
+    risk_class: "P1"
+    region: "Pan-India"
+    context_rules:
+      - "Caller being actively shadowed or followed"
+    suggested_safe_question: "Are you in a well-lit or crowded public place right now?"
+    suggested_safe_question_hi: "Kya aap abhi kisi bheed-bhaad ya roshni wali jagah par hain?"

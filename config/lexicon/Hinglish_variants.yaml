@@ -1,0 +1,30 @@
+# Hinglish Canonical Normalization & Spelling Variant Map
+# Version: 1.1.0
+# Reference: FR-1.2 - Script & language normalization, variant folding (maar / mar / maara)
+
+canonical_dictionary:
+  # Violence / Physical Harm
+  "maar": ["mar", "maara", "maarr", "peet", "marpeet", "pitai", "marna", "maar rahe", "maar raha", "mar rha", "mar rhe", "dhakka", "chot", "hit", "beaten", "beating"]
+  "khoon": ["khun", "khon", "blood", "bleeding", "khoon nikal", "khun beh", "zakhm", "injured", "injury", "ghayal"]
+  "chaku": ["chaaku", "chhuri", "knife", "blade", "chaku dikhaya", "weapon", "talwar", "hathiyar", "gun", "bandook", "tamancha"]
+  "jaan": ["jaan se maar", "jaan ka khatra", "life threat", "kill", "mar dalega", "khatam kar dega"]
+
+  # Medical / Health Emergencies
+  "saans": ["sans", "breath", "breathing", "saans nahi", "sans ruk", "asthma", "dam ghut"]
+  "chhati": ["chaati", "chest", "sine", "seene", "chest pain", "heart attack", "dil ka daura"]
+  "behosh": ["behosh ho gaye", "unconscious", "hosh nahi", "faint", "gira pada", "chakar", "no response"]
+  "ambulance": ["ambulans", "amblance", "hospital", "aspatal", "stretcher", "doctor", "emergency ward"]
+
+  # Domestic / Sexual Violence & Harassment
+  "pati": ["husband", "shohar", "pati ne", "sasural", "saas", "sasur", "devar", "in-laws"]
+  "chedkhani": ["chedkhani", "chhed", "molest", "badtameezi", "badtamezi", "harass", "harassment", "zabardasti", "touching"]
+  "bacha": ["baccha", "bacche", "bache", "child", "children", "beta", "beti", "baby", "kid", "kids", "ro raha", "ro rahe"]
+
+  # Urgency & Temporal Adverbs
+  "jaldi": ["jldi", "turant", "fast", "urgent", "emergency", "abhi", "right now", "fatafat", "jald se jald", "tatkal"]
+  "madad": ["help", "sahayata", "bachao", "save", "please help", "police bhejo", "bhaiya bacha lo"]
+  "peecha": ["picha", "following", "stalk", "wahi aadmi", "wahi ladka", "chasing", "stalking"]
+
+  # Spatial & Locality prepositions
+  "ke_paas": ["ke paas", "k pas", "near", "samne", "saamne", "opposite", "bagal mein", "piche", "ke peeche", "metro ke paas", "gate no"]
+  "gali": ["gali no", "lane", "road", "chowk", "chauraha", "sector", "block", "house no", "makan no"]

@@ -1,0 +1,146 @@
+# Sahaay Safety Policy and Routing Configuration
+# Version: 1.0.0
+# Reference: eSahaay PRD Hack@BVP 8.0 PS3
+
+urgency:
+  levels:
+    P0:
+      name: "Critical"
+      description: "Life at immediate risk, active violence, unconscious, weapon present, ongoing danger"
+      target_response_time_min: 8
+      color: "#B42318"
+      icon: "🚨"
+    P1:
+      name: "High"
+      description: "Serious risk, threats, injuries stable, covert distress, trafficking cues, caller cannot speak freely"
+      target_response_time_min: 20
+      color: "#A15C00"
+      icon: "⚠️"
+    P2:
+      name: "Medium"
+      description: "Needs service but not time-critical, past incident, harassment complaint, shelter request"
+      target_response_time_min: 60
+      color: "#286A8A"
+      icon: "ℹ️"
+    P3:
+      name: "Low"
+      description: "Information, legal aid procedure query, counseling query, no active risk cues"
+      target_response_time_min: 240
+      color: "#187347"
+      icon: "📋"
+
+  confidence_threshold_tau: 0.70
+  short_call_word_threshold: 12
+
+  # Asymmetric Cost Matrix for Safety-First Triage
+  # Rows = Ground Truth, Columns = Predicted (P0, P1, P2, P3)
+  # Missing an emergency costs far more than a false alarm
+  cost_matrix:
+    P0:
+      P0: 0
+      P1: 5    # 1 level under-triage
+      P2: 25   # 2 levels under-triage
+      P3: 60   # 3 levels under-triage (catastrophic)
+    P1:
+      P0: 1    # Over-triage (acceptable price of safety)
+      P1: 0
+      P2: 5    # Under-triage
+      P3: 25   # Under-triage
+    P2:
+      P0: 2
+      P1: 1
+      P2: 0
+      P3: 5
+    P3:
+      P0: 3
+      P1: 2
+      P2: 1
+      P3: 0
+
+  escalation_rules:
+    covert_signal_min_urgency: "P1"
+    weapon_present_min_urgency: "P0"
+    active_violence_min_urgency: "P0"
+    child_in_danger_min_urgency: "P0"
+    respiratory_unconscious_min_urgency: "P0"
+    missing_location_with_risk_escalate: true
+    uncertainty_escalate_one_level: true
+
+routing:
+  services:
+    - id: "police"
+      name: "Police / 112 Emergency"
+      contact: "112"
+      icon: "🚓"
+      color: "#173B57"
+    - id: "medical"
+      name: "Medical Emergency / 108 Ambulance"
+      contact: "108"
+      icon: "🚑"
+      color: "#B42318"
+    - id: "shelter"
+      name: "Shelter / Women & Child Welfare NGO"
+      contact: "181 / 1098"
+      icon: "🏠"
+      color: "#286A8A"
+    - id: "legal"
+      name: "Legal Aid / DLSA Support"
+      contact: "15100"
+      icon: "⚖️"
+      color: "#526171"
+    - id: "counseling"
+      name: "Mental Health / Psychological Support"
+      contact: "14416"
+      icon: "🧠"
+      color: "#187347"
+    - id: "no_action"
+      name: "No Action / Log Only"
+      contact: "N/A"
+      icon: "📁"
+      color: "#8B95A5"
+
+  threat_routing_matrix:
+    domestic_violence:
+      primary: ["police"]
+      secondary: ["shelter", "legal"]
+      condition_medical: "if injury or unconscious"
+    sexual_violence:
+      primary: ["police", "medical"]
+      secondary: ["shelter", "legal"]
+    medical_emergency:
+      primary: ["medical"]
+      secondary: []
+      condition_police: "if accident, trauma or violence"
+    accident_fire:
+      primary: ["medical", "police"]
+      secondary: []
+    stalking_harassment:
+      primary: ["police"]
+      secondary: ["legal", "shelter"]
+    child_at_risk:
+      primary: ["police", "shelter"]
+      secondary: ["medical"]
+    trafficking_coercion:
+      primary: ["police", "shelter"]
+      secondary: ["legal"]
+    mental_health_crisis:
+      primary: ["medical", "counseling"]
+      secondary: ["police"]
+    legal_query:
+      primary: ["legal"]
+      secondary: []
+    information_query:
+      primary: ["no_action"]
+      secondary: []
+
+repeat_matching:
+  bands:
+    auto_link_threshold: 0.92
+    suggest_only_threshold: 0.60
+  weights:
+    phone_hmac: 0.45
+    phonetic_name: 0.20
+    place_similarity: 0.15
+    relationship_match: 0.10
+    recency_decay: 0.10
+  minimum_strong_signals_for_auto: 2
