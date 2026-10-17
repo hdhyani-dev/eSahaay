@@ -26,10 +26,13 @@ def authenticate_user(db: Session, employee_id: str, password: str) -> Optional[
     if not verify_password(password, user.hashed_password):
         return None
     
-    # Update last login
-    user.last_login = datetime.datetime.utcnow()
-    db.commit()
-    db.refresh(user)
+    # Update last login non-blockingly
+    try:
+        user.last_login = datetime.datetime.utcnow()
+        db.commit()
+        db.refresh(user)
+    except Exception:
+        db.rollback()
     return user
 
 def create_user(db: Session, employee_id: str, full_name: str, email: str, password: str, role: str, assigned_service: Optional[str] = None) -> User:

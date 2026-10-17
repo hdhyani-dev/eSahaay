@@ -426,10 +426,47 @@ def page_login():
                 st.error("Invalid Badge ID or Security PIN. Please retry.")
             db.close()
 
+        st.markdown("<div style='margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;'><span style='height: 1px; flex: 1; background: rgba(148, 163, 184, 0.2);'></span><span style='font-size: 10.5px; opacity: 0.7; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;'>One-Tap Guest Passes</span><span style='height: 1px; flex: 1; background: rgba(148, 163, 184, 0.2);'></span></div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
+
+        col_demo1, col_demo2 = st.columns(2)
+        with col_demo1:
+            if st.button("⚡ Operator Pass", key="btn_quick_op", help="Instant 1-tap access as Operator (Riya Sharma)", use_container_width=True):
+                db = get_db_session()
+                user = db.query(User).filter(User.employee_id == "OP1042").first() or db.query(User).first()
+                if user:
+                    st.session_state.user = {
+                        "id": user.id,
+                        "employee_id": user.employee_id,
+                        "full_name": user.full_name,
+                        "role": user.role,
+                        "email": user.email
+                    }
+                    st.session_state.current_page = "triage"
+                    db.close()
+                    st.rerun()
+                db.close()
+        with col_demo2:
+            if st.button("⚖️ Evaluator Pass", key="btn_quick_judge", help="Instant 1-tap access as Hackathon Judge", use_container_width=True):
+                db = get_db_session()
+                user = db.query(User).filter(User.role == "judge").first() or db.query(User).first()
+                if user:
+                    st.session_state.user = {
+                        "id": user.id,
+                        "employee_id": user.employee_id,
+                        "full_name": user.full_name,
+                        "role": user.role,
+                        "email": user.email
+                    }
+                    st.session_state.current_page = "triage"
+                    db.close()
+                    st.rerun()
+                db.close()
+
         st.markdown(
             """
                 <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.2); text-align: center; font-size: 10.5px; opacity: 0.65;">
-                    Restricted Access • Emergency CAD Terminal • Hack@BVP 8.0
+                    Emergency CAD Workstation • Hack@BVP 8.0 • Mobile & Desktop Ready
                 </div>
             </div>
             """,
