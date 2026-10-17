@@ -386,7 +386,7 @@ def page_login():
         full_logo_uri = get_logo_data_uri("full")
         st.markdown(
             f"""
-            <div class="sahaay-card" style="border-radius: 14px; padding: 24px 28px; margin-top: 40px; box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.35);">
+            <div class="sahaay-card login-card" style="border-radius: 14px; padding: 24px 28px; margin: 24px auto; max-width: 460px; box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.35);">
                 <!-- eSahaay Official Brand Logo (Compact High-DPI) -->
                 <div style="text-align: center; margin-bottom: 14px;">
                     <img src="{full_logo_uri}" style="height: 155px; width: auto; max-width: 100%; object-fit: contain; filter: drop-shadow(0 4px 16px rgba(37, 99, 235, 0.22));" alt="eSahaay Logo" />
