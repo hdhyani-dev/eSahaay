@@ -165,6 +165,9 @@ if "triage_input_mode" not in st.session_state:
 if "sim_call_start_time" not in st.session_state:
     st.session_state.sim_call_start_time = None
 
+if "mobile_nav_open" not in st.session_state:
+    st.session_state.mobile_nav_open = False
+
 # DB helper
 def get_db_session():
     return SessionLocal()
@@ -175,6 +178,14 @@ def get_db_session():
 def render_sidebar():
     with st.sidebar:
         is_dark = (st.session_state.theme_mode == "dark")
+
+        # Mobile Close / Hide Menu Button inside Sidebar
+        st.markdown('<div class="sidebar-mobile-close-container">', unsafe_allow_html=True)
+        if st.button("✕  Hide Menu / Close Sidebar", key="btn_sidebar_hide_menu", use_container_width=True):
+            st.session_state.mobile_nav_open = False
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+
         brand_title_color = "#F1F5F9" if is_dark else "#142238"
         brand_sub_color = "#A8B6C9" if is_dark else "#475569"
         pill_border = "rgba(34, 211, 238, 0.35)" if is_dark else "rgba(0, 127, 158, 0.35)"
@@ -235,6 +246,26 @@ def render_sidebar():
             st.session_state.current_page = "incidents"
             st.rerun()
 
+        # OPERATIONS & FLEET
+        st.markdown("<div class='sidebar-category-header'>OPERATIONS & FLEET</div>", unsafe_allow_html=True)
+        is_map = (st.session_state.current_page == "map")
+        map_label = "🗺️  Geospatial Fleet Map          ›" if is_map else "🗺️  Geospatial Fleet Map"
+        if st.button(map_label, key="nav_btn_map", use_container_width=True, type="primary" if is_map else "secondary"):
+            st.session_state.current_page = "map"
+            st.rerun()
+
+        is_sim = (st.session_state.current_page == "simulator")
+        sim_label = "🧪  Call Simulator               ›" if is_sim else "🧪  Call Simulator"
+        if st.button(sim_label, key="nav_btn_sim", use_container_width=True, type="primary" if is_sim else "secondary"):
+            st.session_state.current_page = "simulator"
+            st.rerun()
+
+        is_help = (st.session_state.current_page == "help")
+        help_label = "🛡️  Operator SOPs & Help          ›" if is_help else "🛡️  Operator SOPs & Help"
+        if st.button(help_label, key="nav_btn_help", use_container_width=True, type="primary" if is_help else "secondary"):
+            st.session_state.current_page = "help"
+            st.rerun()
+
         st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
         cur_user = st.session_state.get("user") or {}
         st.markdown(
@@ -252,6 +283,137 @@ def render_sidebar():
             st.session_state.user = None
             st.session_state.current_page = "login"
             st.rerun()
+
+
+# ---------------------------------------------------------
+# Mobile Dedicated Navigation Bar (Show/Hide Menu)
+# ---------------------------------------------------------
+def render_mobile_nav_bar():
+    """
+    Dedicated responsive mobile navigation bar with 1-tap Show/Hide menu toggle.
+    Optimized for mobile phone touchscreens (< 768px). Hidden on desktop.
+    """
+    is_dark = (st.session_state.get("theme_mode", "dark") == "dark")
+    cur_page = st.session_state.get("current_page", "triage")
+    is_open = st.session_state.get("mobile_nav_open", False)
+
+    page_info = {
+        "triage": ("⛨ New Incident", "Live Call & AI Triage"),
+        "dashboard": ("⊞ Dashboard", "Live Queue & Metrics"),
+        "incidents": ("⏱ Case History", "Past Dossiers"),
+        "case_detail": ("📋 Case Detail", "Dossier & Audit Trail"),
+        "dispatch": ("🛰️ Field Dispatch", "GPS Live Trajectory"),
+        "map": ("🗺️ Fleet Map", "Delhi NCR Responder Map"),
+        "repeats": ("🔍 Repeat Review", "Anti-Merge Audit"),
+        "lexicon": ("📖 Lexicon", "Dialect Terminology"),
+        "simulator": ("🧪 Simulator", "Offline Scenario Testing"),
+        "eval": ("📊 Evaluation", "Safety Benchmark"),
+        "impact": ("🌱 SDG Impact", "Response Metrics"),
+        "admin": ("⚙️ Admin Station", "Data Seed & System Reset"),
+        "help": ("🛡️ Operator SOPs", "Protocols & Reference"),
+        "ps3": ("🚀 PS3 Mission", "Overview & Checklist")
+    }
+    cur_title, cur_subtitle = page_info.get(cur_page, ("⛨ Triage Console", "Active Workspace"))
+
+    st.markdown('<div class="mobile-nav-wrapper">', unsafe_allow_html=True)
+
+    col_toggle, col_status = st.columns([1.3, 1.7], gap="small")
+    with col_toggle:
+        if not is_open:
+            if st.button("☰ Show Menu", key="btn_mobile_menu_show", use_container_width=True, type="primary"):
+                st.session_state.mobile_nav_open = True
+                st.rerun()
+        else:
+            if st.button("✕ Hide Menu", key="btn_mobile_menu_hide", use_container_width=True, type="primary"):
+                st.session_state.mobile_nav_open = False
+                st.rerun()
+
+    with col_status:
+        st.markdown(
+            f"""
+            <div class="mobile-nav-status-chip" style="background: {'#111C2E' if is_dark else '#FFFFFF'}; border: 1.5px solid {'#22D3EE' if is_dark else '#007F9E'}; border-radius: 8px; padding: 6px 10px; display: flex; align-items: center; justify-content: space-between; height: 38px; box-sizing: border-box;">
+                <div style="font-size: 12px; font-weight: 800; color: {'#22D3EE' if is_dark else '#007F9E'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    {cur_title}
+                </div>
+                <div style="font-size: 10px; color: {'#94A3B8' if is_dark else '#64748B'}; font-weight: 700;">
+                    {cur_subtitle}
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    # Expanded Mobile Navigation Drawer
+    if is_open:
+        st.markdown(
+            f"""
+            <div class="mobile-nav-drawer-box" style="background: {'#0B1220' if is_dark else '#F8FAFC'}; border: 2px solid {'#22D3EE' if is_dark else '#007F9E'}; border-radius: 12px; padding: 14px 14px 8px 14px; margin-top: 8px; margin-bottom: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid {'#1E293B' if is_dark else '#E2E8F0'};">
+                    <div style="font-size: 13px; font-weight: 900; color: {'#F8FAFC' if is_dark else '#0F172A'}; letter-spacing: 0.04em;">
+                        📱 MOBILE NAVIGATION MENU
+                    </div>
+                    <div style="font-size: 11px; font-weight: 700; color: {'#22D3EE' if is_dark else '#007F9E'};">
+                        Select a Destination
+                    </div>
+                </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        m_col1, m_col2 = st.columns(2, gap="small")
+        with m_col1:
+            if st.button("⛨ New Incident", key="m_btn_triage", use_container_width=True, type="primary" if cur_page == "triage" else "secondary"):
+                st.session_state.current_page = "triage"
+                st.session_state.mobile_nav_open = False
+                st.rerun()
+            if st.button("⏱ Case History", key="m_btn_history", use_container_width=True, type="primary" if cur_page in ["incidents", "case_detail"] else "secondary"):
+                st.session_state.current_page = "incidents"
+                st.session_state.mobile_nav_open = False
+                st.rerun()
+            if st.button("🗺️ Fleet Map", key="m_btn_map", use_container_width=True, type="primary" if cur_page == "map" else "secondary"):
+                st.session_state.current_page = "map"
+                st.session_state.mobile_nav_open = False
+                st.rerun()
+            if st.button("🧪 Call Simulator", key="m_btn_sim", use_container_width=True, type="primary" if cur_page == "simulator" else "secondary"):
+                st.session_state.current_page = "simulator"
+                st.session_state.mobile_nav_open = False
+                st.rerun()
+            if st.button("🚀 PS3 Mission", key="m_btn_ps3", use_container_width=True, type="primary" if cur_page == "ps3" else "secondary"):
+                st.session_state.current_page = "ps3"
+                st.session_state.mobile_nav_open = False
+                st.rerun()
+
+        with m_col2:
+            if st.button("⊞ Dashboard", key="m_btn_dash", use_container_width=True, type="primary" if cur_page == "dashboard" else "secondary"):
+                st.session_state.current_page = "dashboard"
+                st.session_state.mobile_nav_open = False
+                st.rerun()
+            if st.button("🛰️ Field Dispatch", key="m_btn_disp", use_container_width=True, type="primary" if cur_page == "dispatch" else "secondary"):
+                st.session_state.current_page = "dispatch"
+                st.session_state.mobile_nav_open = False
+                st.rerun()
+            if st.button("📖 Lexicon", key="m_btn_lex", use_container_width=True, type="primary" if cur_page == "lexicon" else "secondary"):
+                st.session_state.current_page = "lexicon"
+                st.session_state.mobile_nav_open = False
+                st.rerun()
+            if st.button("🛡️ Operator SOPs", key="m_btn_help", use_container_width=True, type="primary" if cur_page == "help" else "secondary"):
+                st.session_state.current_page = "help"
+                st.session_state.mobile_nav_open = False
+                st.rerun()
+            if st.button("🚪 Sign Out", key="m_btn_logout", use_container_width=True):
+                st.session_state.user = None
+                st.session_state.current_page = "login"
+                st.session_state.mobile_nav_open = False
+                st.rerun()
+
+        st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
+        if st.button("✕ Close / Hide Menu", key="m_btn_close_drawer", use_container_width=True):
+            st.session_state.mobile_nav_open = False
+            st.rerun()
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # Page 0: PS3 Mission & Checklist Landing Page
@@ -2737,6 +2899,7 @@ def main():
         return
 
     render_sidebar()
+    render_mobile_nav_bar()
     page = st.session_state.current_page
 
     if page == "dashboard":
@@ -2745,6 +2908,26 @@ def main():
         page_incidents()
     elif page == "case_detail":
         page_case_detail()
+    elif page == "dispatch":
+        page_dispatch()
+    elif page == "map":
+        page_map_view()
+    elif page == "simulator":
+        page_simulator()
+    elif page == "repeats":
+        page_repeat_review()
+    elif page == "lexicon":
+        page_lexicon()
+    elif page == "eval":
+        page_eval()
+    elif page == "impact":
+        page_impact()
+    elif page == "admin":
+        page_admin()
+    elif page == "help":
+        page_help()
+    elif page == "ps3":
+        page_ps3()
     else:
         page_triage()
 

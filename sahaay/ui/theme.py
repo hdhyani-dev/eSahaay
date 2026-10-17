@@ -1352,14 +1352,16 @@ def get_theme_css(mode: str = "dark") -> str:
         letter-spacing: 0.04em !important;
     }}
 
-    /* Desktop Only: Permanently expanded sidebar, hide collapse controls */
+    /* Desktop Only: Permanently expanded sidebar, hide collapse controls and mobile menu bar */
     @media (min-width: 769px) {{
         [data-testid="stSidebarCollapseButton"],
         [data-testid="stSidebarHeader"],
         [data-testid="collapsedControl"],
         button[aria-label*="sidebar" i],
         button[aria-label*="Close" i],
-        button[aria-label*="Open" i] {{
+        button[aria-label*="Open" i],
+        .mobile-nav-wrapper,
+        .sidebar-mobile-close-container {{
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
@@ -1565,6 +1567,77 @@ def get_theme_css(mode: str = "dark") -> str:
             height: 0 !important;
             margin: 0 !important;
             padding: 0 !important;
+        }}
+
+        /* Mobile Dedicated Navigation Bar (Show/Hide Menu) */
+        .mobile-nav-wrapper {{
+            display: block !important;
+            width: 100% !important;
+            margin-bottom: 12px !important;
+            position: relative !important;
+            z-index: 1000 !important;
+        }}
+
+        .sidebar-mobile-close-container {{
+            display: block !important;
+            margin-bottom: 12px !important;
+            width: 100% !important;
+        }}
+
+        .sidebar-mobile-close-container button,
+        button[key="btn_sidebar_hide_menu"] {{
+            background: rgba(239, 68, 68, 0.15) !important;
+            color: #EF4444 !important;
+            border: 1.5px solid #EF4444 !important;
+            font-weight: 800 !important;
+            font-size: 13px !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-height: 40px !important;
+        }}
+
+        /* High-contrast styling for Mobile Menu Show and Hide buttons */
+        div.st-key-btn_mobile_menu_show button,
+        button[key="btn_mobile_menu_show"] {{
+            background: {'#0891B2' if is_dark else '#007F9E'} !important;
+            color: #FFFFFF !important;
+            border: 1.5px solid {'#22D3EE' if is_dark else '#006882'} !important;
+            font-size: 13.5px !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.02em !important;
+            border-radius: 8px !important;
+            min-height: 40px !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+        }}
+        div.st-key-btn_mobile_menu_show button:hover,
+        button[key="btn_mobile_menu_show"]:hover {{
+            background: {'#06B6D4' if is_dark else '#0094B8'} !important;
+            color: #FFFFFF !important;
+        }}
+
+        div.st-key-btn_mobile_menu_hide button,
+        button[key="btn_mobile_menu_hide"],
+        div.st-key-m_btn_close_drawer button,
+        button[key="m_btn_close_drawer"] {{
+            background: rgba(239, 68, 68, 0.2) !important;
+            color: #EF4444 !important;
+            border: 1.5px solid #EF4444 !important;
+            font-size: 13.5px !important;
+            font-weight: 800 !important;
+            border-radius: 8px !important;
+            min-height: 40px !important;
+        }}
+
+        .mobile-nav-drawer-box button {{
+            min-height: 42px !important;
+            font-size: 12.5px !important;
+            font-weight: 700 !important;
+            margin-bottom: 6px !important;
+            border-radius: 8px !important;
+            padding: 8px 10px !important;
         }}
 
         /* Mobile Floating Sidebar Drawer Toggle Button */
