@@ -1360,6 +1360,151 @@ def get_theme_css(mode: str = "dark") -> str:
         border: 1px solid rgba(100, 116, 139, 0.35) !important;
     }}
 
+    /* ==========================================================================
+       MOBILE RESPONSIVENESS & TOUCH OPTIMIZATIONS (Smartphones & Small Tablets)
+       ========================================================================== */
+    @media screen and (max-width: 768px) {{
+        /* Container and Spacing */
+        .main .block-container {{
+            padding: 1rem 0.65rem 4rem 0.65rem !important;
+            max-width: 100% !important;
+        }}
+
+        /* Top Enterprise App-Bar */
+        .sahaay-header {{
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+            padding: 12px 14px !important;
+            border-radius: 10px !important;
+            margin-bottom: 14px !important;
+        }}
+        .sahaay-header > div:last-child {{
+            width: 100% !important;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            justify-content: space-between !important;
+            gap: 8px !important;
+        }}
+        .sahaay-brand-title {{
+            gap: 10px !important;
+        }}
+        .sahaay-brand-name {{
+            font-size: 16px !important;
+        }}
+        .sahaay-tagline {{
+            font-size: 10.5px !important;
+            line-height: 1.3 !important;
+        }}
+        .system-status-capsule {{
+            font-size: 11px !important;
+            padding: 4px 10px !important;
+        }}
+        .operator-profile-pill {{
+            font-size: 11px !important;
+            padding: 4px 10px !important;
+        }}
+
+        /* Floating Theme Toggle on Mobile */
+        div.st-key-top_right_theme_toggle,
+        div[class*="st-key-top_right_theme_toggle"],
+        div[data-testid="stElementContainer"]:has(button[key="top_right_theme_toggle"]) {{
+            top: 10px !important;
+            right: 12px !important;
+            width: 36px !important;
+            height: 36px !important;
+            min-width: 36px !important;
+            min-height: 36px !important;
+        }}
+        div.st-key-top_right_theme_toggle button,
+        button[key="top_right_theme_toggle"] {{
+            width: 36px !important;
+            height: 36px !important;
+            min-width: 36px !important;
+            min-height: 36px !important;
+            font-size: 14px !important;
+        }}
+
+        /* Horizontal Column Layouts: Auto-wrap on mobile */
+        [data-testid="stHorizontalBlock"] {{
+            flex-wrap: wrap !important;
+            gap: 0.75rem !important;
+        }}
+        [data-testid="stHorizontalBlock"] > [data-testid="column"] {{
+            min-width: 100% !important;
+            flex: 1 1 100% !important;
+        }}
+
+        /* Responsive Metric Grids */
+        .grid, [data-testid="stMetric"] {{
+            min-width: 100% !important;
+        }}
+        .grid {{
+            grid-template-columns: 1fr 1fr !important;
+            gap: 10px !important;
+        }}
+
+        /* CAD Cards & Triage Cards */
+        .cad-card, .triage-card, .evidence-card, .summary-card {{
+            padding: 12px 14px !important;
+            margin-bottom: 12px !important;
+            border-radius: 8px !important;
+        }}
+
+        /* Touch-Friendly Form Controls & Buttons */
+        button, .stButton > button {{
+            min-height: 44px !important;
+            font-size: 13.5px !important;
+            padding: 8px 14px !important;
+            touch-action: manipulation !important;
+        }}
+
+        /* Inputs & Select Boxes */
+        input, select, textarea, .stTextInput > div > div > input {{
+            font-size: 14px !important;
+            min-height: 42px !important;
+        }}
+
+        /* Tables and Telemetry Data: Horizontal scrollable */
+        div[data-testid="stTable"], .stDataFrame, table {{
+            display: block !important;
+            width: 100% !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }}
+
+        /* Softphone Call Bar */
+        .call-active-bar, .incoming-call-box {{
+            padding: 10px 12px !important;
+            font-size: 12px !important;
+        }}
+
+        /* Badges & Chips */
+        .badge-p0, .badge-p1, .badge-p2, .badge-p3 {{
+            font-size: 11px !important;
+            padding: 3px 8px !important;
+        }}
+    }}
+
+    @media screen and (max-width: 480px) {{
+        .sahaay-brand-title img {{
+            height: 30px !important;
+        }}
+        .sahaay-brand-name {{
+            font-size: 15px !important;
+        }}
+        .grid {{
+            grid-template-columns: 1fr !important;
+        }}
+        .system-status-capsule span:nth-child(3),
+        .system-status-capsule span:nth-child(4) {{
+            display: none !important;
+        }}
+        .operator-profile-pill div:last-child span:last-child {{
+            display: none !important;
+        }}
+    }}
+
     /* Custom Theme Rules for Dark vs Light Elements */
     {theme_specific_styles}
 

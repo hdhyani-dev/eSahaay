@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>eSahaay — Emergency Response & Helpline Triage System</title>
+  <meta name="description" content="eSahaay: Ten Seconds to Read a Call. Emergency Helpline Triage in Hinglish with Hybrid AI & Safety Rules Floor.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0B1220;
+      --card: #111C2E;
+      --surface: #19283D;
+      --border: #304158;
+      --cyan: #22D3EE;
+      --cyan-glow: rgba(34, 211, 238, 0.2);
+      --red: #FF5C68;
+      --amber: #FBBF24;
+      --green: #34D399;
+      --text: #F1F5F9;
+      --subtext: #A8B6C9;
+      --muted: #64748B;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Top Command Header */
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #0284C7, #06B6D4);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+      color: #FFF;
+      box-shadow: 0 0 16px var(--cyan-glow);
+    }
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .brand-title span {
+      color: var(--cyan);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(34, 211, 238, 0.12);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      border: 1px solid rgba(34, 211, 238, 0.3);
+    }
+    .brand-tagline {
+      font-size: 0.75rem;
+      color: var(--subtext);
+    }
+
+    .header-badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-capsule {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 9999px;
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* Container */
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      padding: 32px 12px 40px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .problem-pill {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--cyan);
+      background: rgba(34, 211, 238, 0.1);
+      border: 1px solid rgba(34, 211, 238, 0.25);
+      padding: 4px 14px;
+      border-radius: 9999px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .hero h1 {
+      font-size: clamp(1.8rem, 5vw, 2.75rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+    }
+    .hero p {
+      font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+      color: var(--subtext);
+      max-width: 720px;
+      margin: 0 auto 28px;
+    }
+    .cta-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      min-height: 44px;
+    }
+    .btn-primary {
+      background: var(--cyan);
+      color: #061A2B;
+      border: 1px solid var(--cyan);
+      box-shadow: 0 4px 14px var(--cyan-glow);
+    }
+    .btn-primary:hover {
+      background: #38BDF8;
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: #22354F;
+      border-color: #4A5F7D;
+    }
+
+    /* Grid Layout */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+    .card-title svg {
+      width: 20px;
+      height: 20px;
+      fill: var(--cyan);
+    }
+
+    /* Interactive Simulator */
+    .sim-selector {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .sim-tab {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--subtext);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.15s ease;
+    }
+    .sim-tab:hover {
+      background: #22354F;
+      color: var(--text);
+    }
+    .sim-tab.active {
+      background: rgba(34, 211, 238, 0.12);
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+    .transcript-box {
+      background: #060B14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      color: #E2E8F0;
+      margin-bottom: 16px;
+      min-height: 80px;
+      line-height: 1.6;
+    }
+    .triage-output {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .badge-p0 {
+      background: #B42318;
+      color: #FFF;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-weight: 800;
+      font-size: 0.8rem;
+      display: inline-block;
+    }
+    .badge-p1 {
+      background: #A15C00;
+      color: #FFF;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-weight: 800;
+      font-size: 0.8rem;
+      display: inline-block;
+    }
+    .output-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.86rem;
+    }
+    .output-row:last-child {
+      border-bottom: none;
+    }
+    .output-label {
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .output-value {
+      font-weight: 700;
+      color: var(--text);
+      text-align: right;
+    }
+
+    /* Credentials Table */
+    .cred-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+    .cred-table th, .cred-table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .cred-table th {
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+    }
+    .cred-role {
+      font-weight: 700;
+      color: var(--cyan);
+    }
+    .code-pill {
+      font-family: var(--font-mono);
+      background: #060B14;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      font-size: 0.8rem;
+    }
+
+    /* Pipeline Step Badges */
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .pipe-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+    .pipe-step .step-id {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--cyan);
+      text-transform: uppercase;
+    }
+    .pipe-step .step-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      background: var(--card);
+      padding: 24px 16px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    @media (max-width: 640px) {
+      .header-badges {
+        display: none;
+      }
+      .card {
+        padding: 16px;
+      }
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-logo">eS</div>
+        <div>
+          <div class="brand-title">eSAHAAY <span>CAD v2.4</span></div>
+          <div class="brand-tagline">Emergency Response & Hinglish Helpline Triage</div>
+        </div>
+      </div>
+      <div class="header-badges">
+        <div class="status-capsule">
+          <span class="pulse-dot"></span>
+          <span>Safety Floor: Armed</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="problem-pill">Hack@BVP 8.0 • Problem Statement 3</div>
+      <h1>Ten Seconds to Read a Call</h1>
+      <p>
+        In emergency helplines (112, 181, 108), callers speak in noisy, code-mixed Hinglish or fragmented whispers. 
+        <b>eSahaay</b> guarantees emergencies are never silently downgraded using an explainable, deterministic hybrid AI safety floor.
+      </p>
+      <div class="cta-group">
+        <a href="https://github.com/hdhyani-dev/eSahaay" target="_blank" rel="noopener" class="btn btn-secondary">
+          <svg style="width:18px;height:18px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          View GitHub Repository
+        </a>
+      </div>
+    </section>
+
+    <div class="grid-2">
+      <!-- Interactive Mobile Triage Preview -->
+      <div class="card">
+        <div class="card-title">
+          <span>⚡ Live Interactive Triage Simulator</span>
+        </div>
+        <p style="font-size:0.84rem; color:var(--subtext); margin-bottom: 12px;">
+          Tap any emergency scenario below to preview real-time Hinglish NLP extraction & safety classification:
+        </p>
+
+        <div class="sim-selector">
+          <button class="sim-tab active" onclick="loadScenario(0)">
+            <span>🍕 Covert Distress (Pizza Pretext)</span>
+            <span class="badge-p1">P1 HIGH</span>
+          </button>
+          <button class="sim-tab" onclick="loadScenario(1)">
+            <span>❤️ Severe Cardiac Collapse (Metro)</span>
+            <span class="badge-p0">P0 CRITICAL</span>
+          </button>
+          <button class="sim-tab" onclick="loadScenario(2)">
+            <span>🔪 Active Robbery with Weapon</span>
+            <span class="badge-p0">P0 CRITICAL</span>
+          </button>
+        </div>
+
+        <div class="transcript-box" id="transcriptDisplay">
+          "bhaiya ek cheese burst pizza bhej do... jaldi bhejo ghar pe koi aa gaya hai gate band hai..."
+        </div>
+
+        <div class="triage-output">
+          <div class="output-row">
+            <span class="output-label">Assessed Urgency</span>
+            <span class="output-value" id="outUrgency"><span class="badge-p1">P1 HIGH</span></span>
+          </div>
+          <div class="output-row">
+            <span class="output-label">Threat Detected</span>
+            <span class="output-value" id="outThreat">Covert Distress (Food Pretext)</span>
+          </div>
+          <div class="output-row">
+            <span class="output-label">Safety Floor</span>
+            <span class="output-value" style="color:var(--green);" id="outFloor">ARMED (DO NOT CALL BACK)</span>
+          </div>
+          <div class="output-row">
+            <span class="output-label">Dispatched Services</span>
+            <span class="output-value" id="outServices">Police (Discreet) • Women Shelter</span>
+          </div>
+          <div class="output-row">
+            <span class="output-label">Decision Latency</span>
+            <span class="output-value" style="color:var(--cyan);">0.42 s (Target &lt; 3.0s)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pre-Seeded Accounts -->
+      <div class="card">
+        <div class="card-title">
+          <span>🔑 Pre-Seeded Evaluation Accounts</span>
+        </div>
+        <p style="font-size:0.84rem; color:var(--subtext); margin-bottom: 14px;">
+          Use these pre-configured credentials to evaluate the role-based views on the workstation:
+        </p>
+        <table class="cred-table">
+          <thead>
+            <tr>
+              <th>Role</th>
+              <th>Login / ID</th>
+              <th>Password</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="cred-role">Operator</td>
+              <td><span class="code-pill">riya.sharma@sahaay.gov.in</span><br><small style="color:var(--muted)">OP1042</small></td>
+              <td><span class="code-pill">operator123</span></td>
+            </tr>
+            <tr>
+              <td class="cred-role">Supervisor</td>
+              <td><span class="code-pill">vikram.malhotra@sahaay.gov.in</span><br><small style="color:var(--muted)">SUP201</small></td>
+              <td><span class="code-pill">super123</span></td>
+            </tr>
+            <tr>
+              <td class="cred-role">Responder</td>
+              <td><span class="code-pill">rajesh.kumar@delhipolice.gov.in</span><br><small style="color:var(--muted)">RES305 (PCR Unit)</small></td>
+              <td><span class="code-pill">police123</span></td>
+            </tr>
+            <tr>
+              <td class="cred-role">Judge</td>
+              <td><span class="code-pill">judge@hackbvp.in</span><br><small style="color:var(--muted)">JUDGE01</small></td>
+              <td><span class="code-pill">demo123</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top: 18px; padding: 12px; background: rgba(34, 211, 238, 0.08); border: 1px solid rgba(34, 211, 238, 0.2); border-radius: 8px; font-size: 0.8rem; color: var(--subtext);">
+          🛡️ <b>Privacy Preserved:</b> Caller telephone numbers are hashed using keyed HMAC-SHA256 for repeat matching and never stored in plain text.
+        </div>
+      </div>
+    </div>
+
+    <!-- M1..M7 NLP Architecture -->
+    <div class="card" style="margin-top: 20px;">
+      <div class="card-title">
+        <span>⚙️ Sub-3-Second Hybrid NLP Architecture (M1 — M7)</span>
+      </div>
+      <div class="pipeline-grid">
+        <div class="pipe-step">
+          <div class="step-id">M1</div>
+          <div class="step-name">Normalizer</div>
+          <small style="color:var(--muted)">Hinglish folding</small>
+        </div>
+        <div class="pipe-step">
+          <div class="step-id">M2</div>
+          <div class="step-name">Extractor</div>
+          <small style="color:var(--muted)">Facts & Location</small>
+        </div>
+        <div class="pipe-step">
+          <div class="step-id">M3</div>
+          <div class="step-name">Covert Det</div>
+          <small style="color:var(--muted)">Pretext signals</small>
+        </div>
+        <div class="pipe-step">
+          <div class="step-id">M4</div>
+          <div class="step-name">Urgency Engine</div>
+          <small style="color:var(--muted)">Safety floor</small>
+        </div>
+        <div class="pipe-step">
+          <div class="step-id">M5</div>
+          <div class="step-name">Router</div>
+          <small style="color:var(--muted)">Multi-agency</small>
+        </div>
+        <div class="pipe-step">
+          <div class="step-id">M6</div>
+          <div class="step-name">Repeat Match</div>
+          <small style="color:var(--muted)">HMAC + Phonetic</small>
+        </div>
+        <div class="pipe-step">
+          <div class="step-id">M7</div>
+          <div class="step-name">Explainer</div>
+          <small style="color:var(--muted)">Evidence spans</small>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>eSahaay • Hack@BVP 8.0 Prototype • Built with Python, Streamlit, and Hybrid AI Safety Architecture</p>
+  </footer>
+
+  <script>
+    const scenarios = [
+      {
+        transcript: '"bhaiya ek cheese burst pizza bhej do... jaldi bhejo ghar pe koi aa gaya hai gate band hai..."',
+        urgencyHtml: '<span class="badge-p1">P1 HIGH</span>',
+        threat: 'Covert Distress (Food Pretext)',
+        floor: 'ARMED (DO NOT CALL BACK)',
+        services: 'Police (Discreet) • Women Shelter'
+      },
+      {
+        transcript: '"Rajiv Chowk metro station gate 2 ke paas ek uncle behosh ho gaye... breathing band hai unki jaldi help bhejo!"',
+        urgencyHtml: '<span class="badge-p0">P0 CRITICAL</span>',
+        threat: 'Cardiac Arrest / Unresponsive',
+        floor: 'ARMED (Medical Emergency P0)',
+        services: 'Advanced Life Support Ambulance • PCR'
+      },
+      {
+        transcript: '"Rohini sector 14 red light pe do log knife nikaal ke loot rahe hain... attack kar diya ek ladke par!"',
+        urgencyHtml: '<span class="badge-p0">P0 CRITICAL</span>',
+        threat: 'Active Violent Assault (Knife/Weapon)',
+        floor: 'ARMED (Weapon & Active Assault P0)',
+        services: 'Police PCR Quick Response • Ambulance'
+      }
+    ];
+
+    function loadScenario(index) {
+      const tabs = document.querySelectorAll('.sim-tab');
+      tabs.forEach((tab, i) => {
+        if (i === index) tab.classList.add('active');
+        else tab.classList.remove('active');
+      });
+
+      const sc = scenarios[index];
+      document.getElementById('transcriptDisplay').innerText = sc.transcript;
+      document.getElementById('outUrgency').innerHTML = sc.urgencyHtml;
+      document.getElementById('outThreat').innerText = sc.threat;
+      document.getElementById('outFloor').innerText = sc.floor;
+      document.getElementById('outServices').innerText = sc.services;
+    }
+  </script>
+</body>
+</html>
