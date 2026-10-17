@@ -43,7 +43,7 @@ def evaluate_dataset(dataset: Optional[List[Dict[str, Any]]] = None) -> Dict[str
         "metrics": metrics,
         "records": eval_records,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()),
-        "dataset_name": "Sahaay Validation Split (15 cases)"
+        "dataset_name": "eSahaay Validation Split (15 cases)"
     }
 
 def run_hidden_set_protocol(hidden_records: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
@@ -90,7 +90,7 @@ def export_evaluation_html_report(eval_summary: Dict[str, Any]) -> str:
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Sahaay Model Evaluation Report</title>
+        <title>eSahaay Model Evaluation Report</title>
         <style>
             body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #F3F5F7; color: #253445; margin: 30px; }}
             .card {{ background: #FFFFFF; border: 1px solid #E8EDF2; border-radius: 8px; padding: 20px; margin-bottom: 25px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }}
@@ -109,7 +109,7 @@ def export_evaluation_html_report(eval_summary: Dict[str, Any]) -> str:
         </style>
     </head>
     <body>
-        <h1>🛡️ Sahaay — Emergency Response Evaluation Report</h1>
+        <h1>🛡️ eSahaay — Emergency Response Evaluation Report</h1>
         <p>Generated: {eval_summary.get('timestamp')} | Model: sahaay-hybrid-v1.0</p>
         
         <div class="card">

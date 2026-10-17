@@ -1,7 +1,7 @@
 @echo off
-title Sahaay - Emergency Response & Triage System
+title eSahaay - Emergency Response & Triage System
 echo ====================================================================
-echo Starting Sahaay - Emergency Response & Triage System
+echo Starting eSahaay - Emergency Response & Triage System
 echo ====================================================================
 
 :: Navigate to this script's directory
@@ -11,7 +11,7 @@ echo [1/2] Seeding demo database...
 python scripts\seed_demo.py
 
 echo.
-echo [2/2] Launching Sahaay Streamlit Application on http://localhost:8501 ...
+echo [2/2] Launching eSahaay Streamlit Application on http://localhost:8501 ...
 python -m streamlit run app.py --server.port=8501
 
 pause

@@ -2698,7 +2698,7 @@ def page_help():
                 <div><b>Station Status:</b> Online (Shift Active)</div>
             </div>
             <div style="margin-top: 15px; padding: 10px; background: #FFF3CD; border-radius: 4px; font-size: 12px; color: #856404;">
-                ⚠️ <b>Disclaimer:</b> Sahaay is a hackathon prototype developed for Hack@BVP 8.0 PS3. All calls, audio references, and dispatch operations in this build are simulated. It is not connected to official emergency numbers and does not replace official emergency services.
+                ⚠️ <b>Disclaimer:</b> eSahaay is a hackathon prototype developed for Hack@BVP 8.0 PS3. All calls, audio references, and dispatch operations in this build are simulated. It is not connected to official emergency numbers and does not replace official emergency services.
             </div>
         </div>
         """,

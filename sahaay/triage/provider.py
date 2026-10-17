@@ -31,7 +31,7 @@ class ModelProvider:
                 import requests
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.gemini_key}"
                 prompt = (
-                    "You are Sahaay Emergency Triage Engine for Hinglish helpline calls.\n"
+                    "You are eSahaay Emergency Triage Engine for Hinglish helpline calls.\n"
                     "Analyze this call transcript and output JSON ONLY with schema:\n"
                     "{\"urgency\": \"P0\"|\"P1\"|\"P2\"|\"P3\", \"confidence\": float (0.0 to 1.0), "
                     "\"threat_type\": string, \"victim\": string, \"weapon\": string, \"injury\": string, \"ongoing\": bool}\n\n"

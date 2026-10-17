@@ -1,8 +1,8 @@
-# Sahaay System Architecture & Engineering Specifications
+# eSahaay System Architecture & Engineering Specifications
 
 ## 1. System Overview & The Ten-Second Path
 
-Sahaay is designed to provide an operator with a complete, safety-first **Triage Card** within a 10-second decision budget when receiving noisy, mixed-language (Hindi, English, Hinglish) emergency helpline calls.
+eSahaay is designed to provide an operator with a complete, safety-first **Triage Card** within a 10-second decision budget when receiving noisy, mixed-language (Hindi, English, Hinglish) emergency helpline calls.
 
 ```
 +-----------------------------------------------------------------------------------------------------+

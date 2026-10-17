@@ -1,4 +1,4 @@
-"""Database connection and session management for Sahaay."""
+"""Database connection and session management for eSahaay."""
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sahaay.config import settings

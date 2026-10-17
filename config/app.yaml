@@ -1,7 +1,7 @@
-# Sahaay Application Settings
+# eSahaay Application Settings
 app:
-  name: "Sahaay"
-  full_name: "Sahaay — Emergency Response & Triage System"
+  name: "eSahaay"
+  full_name: "eSahaay — Emergency Response & Triage System"
   tagline: "Faster response. Safer communities."
   version: "1.0.0-hackathon"
   default_language: "en"

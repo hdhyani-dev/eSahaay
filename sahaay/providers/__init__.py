@@ -1,4 +1,4 @@
-"""Providers package for Sahaay."""
+"""Providers package for eSahaay."""
 from sahaay.providers.call_provider import (
     CallSessionProvider,
     SimulatedCallProvider,

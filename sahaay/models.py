@@ -1,4 +1,4 @@
-"""SQLAlchemy models for Sahaay Emergency Response & Triage System."""
+"""SQLAlchemy models for eSahaay Emergency Response & Triage System."""
 import datetime
 from sqlalchemy import (
     Column, Integer, String, Float, Boolean, DateTime, Text, JSON, ForeignKey, Index

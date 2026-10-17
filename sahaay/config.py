@@ -1,4 +1,4 @@
-"""Configuration manager for Sahaay application and policy settings."""
+"""Configuration manager for eSahaay application and policy settings."""
 import os
 import yaml
 from pathlib import Path

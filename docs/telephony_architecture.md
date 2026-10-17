@@ -1,9 +1,9 @@
 # India-Specific Future Telephony Integration Architecture
-## Sahaay Emergency Response & Triage System
+## eSahaay Emergency Response & Triage System
 
 > [!IMPORTANT]
 > **SIMULATION BOUNDARY NOTICE**
-> The current deliverable of Sahaay operates strictly in **Simulation Mode** using deterministic scenario generators and the `SimulatedCallProvider`. No live phone numbers, audio streaming, or carrier telephony are connected in this prototype. Never connect Sahaay directly to India's public emergency number 112 or any live emergency service line.
+> The current deliverable of eSahaay operates strictly in **Simulation Mode** using deterministic scenario generators and the `SimulatedCallProvider`. No live phone numbers, audio streaming, or carrier telephony are connected in this prototype. Never connect eSahaay directly to India's public emergency number 112 or any live emergency service line.
 
 ---
 
@@ -51,7 +51,7 @@ For future production transition and field trials in India, **Exotel** is recomm
                                                  │
                                                  ▼ (Internal Stream / Queue / Redis Streams)
 +--------------------------------------------------------------------------------------------------+
-|                               HYBRID AI TRIAGE ENGINE (Sahaay NLP Core)                          |
+|                               HYBRID AI TRIAGE ENGINE (eSahaay NLP Core)                         |
 |  - M1: Normalizer (Script ID, Hinglish Canonicalization, Variant Folding)                        |
 |  - M2: Structured Fact & Location Extractor (Gazetteer & Spatial Prepositions)                   |
 |  - M3: Covert-Signal & Code-Word Detector (Whisper detection, safe yes/no prompts)               |

@@ -1,4 +1,4 @@
-# Sahaay — Emergency Response & Triage System
+# eSahaay — Emergency Response & Triage System
 
 > **Problem Statement 3 (Hack@BVP 8.0):** *Ten Seconds to Read a Call: Helpline Triage in Hinglish*  
 > **Tagline:** *Faster response. Safer communities.*
@@ -9,7 +9,7 @@
 
 In emergency helplines (112, 181, 108), callers often communicate in **noisy, code-mixed Hindi, English, and Hinglish**, speak in fragmented whispers, or use covert pretexts because a perpetrator is in the room. An operator has roughly **ten seconds** to interpret the call, evaluate urgency, extract location and incident facts, and route cases to police, medical, shelter, or legal assistance.
 
-**Sahaay** is an operator co-pilot built to guarantee that **emergencies are never silently downgraded**. By fusing **multilingual NLP reasoning** with **deterministic safety rules**, Sahaay provides human call-takers with an explainable, one-glance **Triage Card** within seconds.
+**eSahaay** is an operator co-pilot built to guarantee that **emergencies are never silently downgraded**. By fusing **multilingual NLP reasoning** with **deterministic safety rules**, eSahaay provides human call-takers with an explainable, one-glance **Triage Card** within seconds.
 
 ---
 
@@ -17,7 +17,7 @@ In emergency helplines (112, 181, 108), callers often communicate in **noisy, co
 
 > [!IMPORTANT]
 > **SIMULATION-ONLY ARCHITECTURAL BOUNDARY**
-> - Sahaay is a hackathon prototype running in a local workstation environment.
+> - eSahaay is a hackathon prototype running in a local workstation environment.
 > - **All calls, transcripts, audio streams, responder units, ETAs, and dispatch operations are strictly simulated.**
 > - The application operates completely **offline** without telephony credentials, phone numbers, or paid external LLM keys.
 > - The application never activates the browser microphone, dials real numbers, or connects to India's national emergency number 112.
@@ -228,7 +228,7 @@ python -m pytest tests
 │   │   ├── metrics.py          # Bootstrap CI, under-triage, macro-F1
 │   │   └── harness.py          # Benchmark runner & hidden set protocol
 │   └── ui/                     # UI components & design system
-│       ├── theme.py            # Sahaay CSS design palette & typography
+│       ├── theme.py            # eSahaay CSS design palette & typography
 │       ├── components.py       # Headers, chips, and Triage Card
 │       └── help_content.py     # Protocols & keyboard shortcuts
 ├── config/                     # Versioned policy and lexicon configurations
@@ -249,5 +249,5 @@ python -m pytest tests
 ## 📜 Disclaimer & Ethical Safeguards
 
 - **Privacy by Design:** Raw phone numbers are never stored in plain text. Keyed HMAC-SHA256 hashes are used for repeat candidate comparisons, and phone numbers are masked in all operator views.
-- **Human-in-the-Loop:** Sahaay is a co-pilot that recommends urgency and service routing; a human operator confirms every dispatch. Every priority override is recorded in an immutable audit trail with actor ID, timestamp, and mandatory justification.
+- **Human-in-the-Loop:** eSahaay is a co-pilot that recommends urgency and service routing; a human operator confirms every dispatch. Every priority override is recorded in an immutable audit trail with actor ID, timestamp, and mandatory justification.
 - **Hackathon Demonstration Only:** This application is built as a prototype for Hack@BVP 8.0 Problem Statement 3. It is not connected to India's Emergency Response Support System (ERSS / 112) or official police/ambulance infrastructure.

@@ -1,4 +1,4 @@
-"""Audio utility for Sahaay Emergency CAD workstation.
+"""Audio utility for eSahaay Emergency CAD workstation.
 Generates and plays realistic PBX emergency telephone ringtone alerts.
 """
 import io

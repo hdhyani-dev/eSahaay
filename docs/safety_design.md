@@ -1,10 +1,10 @@
 # Safety-First Design & Hybrid AI Triage Principles
-## Sahaay Emergency Response & Triage System
+## eSahaay Emergency Response & Triage System
 
 ### 1. Safety Asymmetry Principle
 In emergency helpline triage, false negatives (missing or under-triaging a life-threatening crisis) incur an intolerable humanitarian cost, whereas false positives (over-triaging to P0/P1) represent an acceptable price for human safety.
 
-Sahaay embodies this through three non-negotiable architectural guarantees:
+eSahaay embodies this through three non-negotiable architectural guarantees:
 1. **Never Silently Downgrade:** If deterministic safety rules fire on credible danger cues (weapons, active assault, cardiac collapse, breathlessness, child at risk), no AI classifier or statistical model may downgrade the case.
 2. **Escalation on Uncertainty:** If confidence is below threshold $\tau$ (0.75), or location is unconfirmed on $\ge P1$, or the call is unusually short with danger cues, the system automatically raises the urgency by one level and raises the `VERIFY` flag.
 3. **Max-Risk Fusion:** When combining the deterministic Rules Floor ($F_{\text{rules}}$), Covert Signal Floor ($F_{\text{covert}}$), and Model Prediction ($M$), the resulting level is strictly:
