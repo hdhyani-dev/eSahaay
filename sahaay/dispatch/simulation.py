@@ -140,3 +140,157 @@ def reset_unit_to_base(db: Session, unit_id: str) -> ResponseUnit:
         db.commit()
         db.refresh(unit)
     return unit
+
+def advance_unit_towards_incident(
+    db: Session,
+    assignment_id: int,
+    step_fraction: float = 0.25,
+    actor_id: str = "Dispatcher"
+) -> Dict[str, Any]:
+    """
+    Smoothly advance a response unit along its vector towards the assigned incident.
+    - Transitions 'assigned' or 'dispatched' to 'en_route'.
+    - If remaining distance <= 0.25 km, marks status as 'arrived'.
+    - Dynamically recalculates distance and ETA.
+    """
+    assignment = db.query(DispatchAssignment).filter(DispatchAssignment.id == assignment_id).first()
+    if not assignment:
+        return {"error": "Assignment not found"}
+        
+    unit = db.query(ResponseUnit).filter(ResponseUnit.id == assignment.unit_id).first()
+    incident = db.query(Incident).filter(Incident.id == assignment.incident_id).first()
+    if not unit or not incident:
+        return {"error": "Unit or Incident not found"}
+
+    target_lat = incident.latitude or 28.6139
+    target_lon = incident.longitude or 77.2090
+    now = datetime.datetime.utcnow()
+
+    # If not en_route yet, begin movement
+    if assignment.status in ["assigned", "dispatched", "acknowledged"]:
+        assignment.status = "en_route"
+        unit.status = "en_route"
+        if not assignment.en_route_at:
+            assignment.en_route_at = now
+
+    # Interpolate unit position
+    unit.current_lat += (target_lat - unit.current_lat) * step_fraction
+    unit.current_lon += (target_lon - unit.current_lon) * step_fraction
+
+    cur_dist = calculate_haversine_km(unit.current_lat, unit.current_lon, target_lat, target_lon)
+    arrived = False
+
+    if cur_dist <= 0.25:
+        # Snap to destination
+        unit.current_lat = target_lat
+        unit.current_lon = target_lon
+        assignment.status = "arrived"
+        assignment.arrived_at = now
+        unit.status = "arrived"
+        route_km = 0.0
+        eta_minutes = 0.0
+        arrived = True
+    else:
+        route_km = estimate_route_km(unit.current_lat, unit.current_lon, target_lat, target_lon)
+        eta_info = compute_eta_details(route_km, unit.speed_kmh)
+        eta_minutes = eta_info["eta_minutes"]
+
+    assignment.distance_km = route_km
+    assignment.eta_minutes = eta_minutes
+    unit.last_updated = now
+
+    db.commit()
+    db.refresh(assignment)
+    db.refresh(unit)
+
+    log_audit_event(
+        db=db,
+        actor_id=actor_id,
+        actor_role="dispatcher",
+        action="DISPATCH_UNIT_ADVANCED",
+        object_type="dispatch",
+        object_id=str(assignment.id),
+        after_state={
+            "status": assignment.status,
+            "unit_lat": unit.current_lat,
+            "unit_lon": unit.current_lon,
+            "distance_km": route_km,
+            "eta_minutes": eta_minutes,
+            "arrived": arrived
+        },
+        reason=f"Unit {unit.unit_name} moved towards {incident.id} (remaining: {route_km:.1f}km)"
+    )
+
+    return {
+        "assignment_id": assignment.id,
+        "unit_id": unit.id,
+        "unit_name": unit.unit_name,
+        "status": assignment.status,
+        "unit_status": unit.status,
+        "distance_km": round(route_km, 2),
+        "eta_minutes": round(eta_minutes, 1),
+        "unit_lat": round(unit.current_lat, 4),
+        "unit_lon": round(unit.current_lon, 4),
+        "arrived": arrived
+    }
+
+def escalate_unit_response(
+    db: Session,
+    assignment_id: int,
+    code_3: bool = True,
+    speed_boost: float = 25.0,
+    actor_id: str = "Dispatcher"
+) -> Dict[str, Any]:
+    """
+    Escalate a unit's priority response (Code 3: lights and sirens).
+    Increases unit transit speed, recalculates ETA, and logs an audit event.
+    """
+    assignment = db.query(DispatchAssignment).filter(DispatchAssignment.id == assignment_id).first()
+    if not assignment:
+        return {"error": "Assignment not found"}
+        
+    unit = db.query(ResponseUnit).filter(ResponseUnit.id == assignment.unit_id).first()
+    incident = db.query(Incident).filter(Incident.id == assignment.incident_id).first()
+    if not unit or not incident:
+        return {"error": "Unit or Incident not found"}
+
+    target_lat = incident.latitude or 28.6139
+    target_lon = incident.longitude or 77.2090
+
+    old_speed = unit.speed_kmh
+    if code_3:
+        unit.speed_kmh = max(unit.speed_kmh + speed_boost, 72.0)
+    else:
+        unit.speed_kmh = max(unit.speed_kmh - speed_boost, 40.0)
+
+    route_km = estimate_route_km(unit.current_lat, unit.current_lon, target_lat, target_lon)
+    eta_info = compute_eta_details(route_km, unit.speed_kmh)
+    
+    assignment.distance_km = route_km
+    assignment.eta_minutes = eta_info["eta_minutes"]
+    unit.last_updated = datetime.datetime.utcnow()
+
+    db.commit()
+    db.refresh(assignment)
+    db.refresh(unit)
+
+    log_audit_event(
+        db=db,
+        actor_id=actor_id,
+        actor_role="dispatcher",
+        action="DISPATCH_PRIORITY_ESCALATED",
+        object_type="dispatch",
+        object_id=str(assignment.id),
+        before_state={"speed_kmh": old_speed},
+        after_state={"speed_kmh": unit.speed_kmh, "eta_minutes": assignment.eta_minutes, "code_3": code_3},
+        reason=f"Code 3 Escalation: {unit.unit_name} speed updated to {unit.speed_kmh:.1f} km/h"
+    )
+
+    return {
+        "assignment_id": assignment.id,
+        "unit_id": unit.id,
+        "speed_kmh": unit.speed_kmh,
+        "distance_km": round(route_km, 2),
+        "eta_minutes": round(assignment.eta_minutes, 1)
+    }
+
