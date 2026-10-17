@@ -76,21 +76,7 @@ from sahaay.dispatch.assignment import (
     assign_unit_to_incident,
     get_all_services_nearest_units
 )
-from sahaay.dispatch.simulation import (
-    step_assignment_simulation,
-    reset_unit_to_base,
-    advance_unit_towards_incident,
-    escalate_unit_response
-)
-from sahaay.ui.dispatch_map import (
-    build_dispatch_tactical_map,
-    build_fleet_overview_map,
-    render_telemetry_hud,
-    render_tactical_comms_console,
-    render_tactical_voice_call_panel,
-    TACTICAL_PRESET_DIRECTIVES,
-    generate_unit_tactical_acknowledgment
-)
+from sahaay.dispatch.simulation import step_assignment_simulation, reset_unit_to_base
 from sahaay.repeat_matching.matcher import match_repeat_complaints, approve_or_create_link, undo_repeat_link
 from sahaay.triage.pipeline import run_triage_pipeline
 from sahaay.triage.translate import translate_to_english
@@ -165,9 +151,6 @@ if "triage_input_mode" not in st.session_state:
 if "sim_call_start_time" not in st.session_state:
     st.session_state.sim_call_start_time = None
 
-if "mobile_nav_open" not in st.session_state:
-    st.session_state.mobile_nav_open = False
-
 # DB helper
 def get_db_session():
     return SessionLocal()
@@ -178,14 +161,6 @@ def get_db_session():
 def render_sidebar():
     with st.sidebar:
         is_dark = (st.session_state.theme_mode == "dark")
-
-        # Mobile Close / Hide Menu Button inside Sidebar
-        st.markdown('<div class="sidebar-mobile-close-container">', unsafe_allow_html=True)
-        if st.button("✕  Hide Menu / Close Sidebar", key="btn_sidebar_hide_menu", use_container_width=True):
-            st.session_state.mobile_nav_open = False
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-
         brand_title_color = "#F1F5F9" if is_dark else "#142238"
         brand_sub_color = "#A8B6C9" if is_dark else "#475569"
         pill_border = "rgba(34, 211, 238, 0.35)" if is_dark else "rgba(0, 127, 158, 0.35)"
@@ -246,26 +221,6 @@ def render_sidebar():
             st.session_state.current_page = "incidents"
             st.rerun()
 
-        # OPERATIONS & FLEET
-        st.markdown("<div class='sidebar-category-header'>OPERATIONS & FLEET</div>", unsafe_allow_html=True)
-        is_map = (st.session_state.current_page == "map")
-        map_label = "🗺️  Geospatial Fleet Map          ›" if is_map else "🗺️  Geospatial Fleet Map"
-        if st.button(map_label, key="nav_btn_map", use_container_width=True, type="primary" if is_map else "secondary"):
-            st.session_state.current_page = "map"
-            st.rerun()
-
-        is_sim = (st.session_state.current_page == "simulator")
-        sim_label = "🧪  Call Simulator               ›" if is_sim else "🧪  Call Simulator"
-        if st.button(sim_label, key="nav_btn_sim", use_container_width=True, type="primary" if is_sim else "secondary"):
-            st.session_state.current_page = "simulator"
-            st.rerun()
-
-        is_help = (st.session_state.current_page == "help")
-        help_label = "🛡️  Operator SOPs & Help          ›" if is_help else "🛡️  Operator SOPs & Help"
-        if st.button(help_label, key="nav_btn_help", use_container_width=True, type="primary" if is_help else "secondary"):
-            st.session_state.current_page = "help"
-            st.rerun()
-
         st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
         cur_user = st.session_state.get("user") or {}
         st.markdown(
@@ -283,137 +238,6 @@ def render_sidebar():
             st.session_state.user = None
             st.session_state.current_page = "login"
             st.rerun()
-
-
-# ---------------------------------------------------------
-# Mobile Dedicated Navigation Bar (Show/Hide Menu)
-# ---------------------------------------------------------
-def render_mobile_nav_bar():
-    """
-    Dedicated responsive mobile navigation bar with 1-tap Show/Hide menu toggle.
-    Optimized for mobile phone touchscreens (< 768px). Hidden on desktop.
-    """
-    is_dark = (st.session_state.get("theme_mode", "dark") == "dark")
-    cur_page = st.session_state.get("current_page", "triage")
-    is_open = st.session_state.get("mobile_nav_open", False)
-
-    page_info = {
-        "triage": ("⛨ New Incident", "Live Call & AI Triage"),
-        "dashboard": ("⊞ Dashboard", "Live Queue & Metrics"),
-        "incidents": ("⏱ Case History", "Past Dossiers"),
-        "case_detail": ("📋 Case Detail", "Dossier & Audit Trail"),
-        "dispatch": ("🛰️ Field Dispatch", "GPS Live Trajectory"),
-        "map": ("🗺️ Fleet Map", "Delhi NCR Responder Map"),
-        "repeats": ("🔍 Repeat Review", "Anti-Merge Audit"),
-        "lexicon": ("📖 Lexicon", "Dialect Terminology"),
-        "simulator": ("🧪 Simulator", "Offline Scenario Testing"),
-        "eval": ("📊 Evaluation", "Safety Benchmark"),
-        "impact": ("🌱 SDG Impact", "Response Metrics"),
-        "admin": ("⚙️ Admin Station", "Data Seed & System Reset"),
-        "help": ("🛡️ Operator SOPs", "Protocols & Reference"),
-        "ps3": ("🚀 PS3 Mission", "Overview & Checklist")
-    }
-    cur_title, cur_subtitle = page_info.get(cur_page, ("⛨ Triage Console", "Active Workspace"))
-
-    st.markdown('<div class="mobile-nav-wrapper">', unsafe_allow_html=True)
-
-    col_toggle, col_status = st.columns([1.3, 1.7], gap="small")
-    with col_toggle:
-        if not is_open:
-            if st.button("☰ Show Menu", key="btn_mobile_menu_show", use_container_width=True, type="primary"):
-                st.session_state.mobile_nav_open = True
-                st.rerun()
-        else:
-            if st.button("✕ Hide Menu", key="btn_mobile_menu_hide", use_container_width=True, type="primary"):
-                st.session_state.mobile_nav_open = False
-                st.rerun()
-
-    with col_status:
-        st.markdown(
-            f"""
-            <div class="mobile-nav-status-chip" style="background: {'#111C2E' if is_dark else '#FFFFFF'}; border: 1.5px solid {'#22D3EE' if is_dark else '#007F9E'}; border-radius: 8px; padding: 6px 10px; display: flex; align-items: center; justify-content: space-between; height: 38px; box-sizing: border-box;">
-                <div style="font-size: 12px; font-weight: 800; color: {'#22D3EE' if is_dark else '#007F9E'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    {cur_title}
-                </div>
-                <div style="font-size: 10px; color: {'#94A3B8' if is_dark else '#64748B'}; font-weight: 700;">
-                    {cur_subtitle}
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    # Expanded Mobile Navigation Drawer
-    if is_open:
-        st.markdown(
-            f"""
-            <div class="mobile-nav-drawer-box" style="background: {'#0B1220' if is_dark else '#F8FAFC'}; border: 2px solid {'#22D3EE' if is_dark else '#007F9E'}; border-radius: 12px; padding: 14px 14px 8px 14px; margin-top: 8px; margin-bottom: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid {'#1E293B' if is_dark else '#E2E8F0'};">
-                    <div style="font-size: 13px; font-weight: 900; color: {'#F8FAFC' if is_dark else '#0F172A'}; letter-spacing: 0.04em;">
-                        📱 MOBILE NAVIGATION MENU
-                    </div>
-                    <div style="font-size: 11px; font-weight: 700; color: {'#22D3EE' if is_dark else '#007F9E'};">
-                        Select a Destination
-                    </div>
-                </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        m_col1, m_col2 = st.columns(2, gap="small")
-        with m_col1:
-            if st.button("⛨ New Incident", key="m_btn_triage", use_container_width=True, type="primary" if cur_page == "triage" else "secondary"):
-                st.session_state.current_page = "triage"
-                st.session_state.mobile_nav_open = False
-                st.rerun()
-            if st.button("⏱ Case History", key="m_btn_history", use_container_width=True, type="primary" if cur_page in ["incidents", "case_detail"] else "secondary"):
-                st.session_state.current_page = "incidents"
-                st.session_state.mobile_nav_open = False
-                st.rerun()
-            if st.button("🗺️ Fleet Map", key="m_btn_map", use_container_width=True, type="primary" if cur_page == "map" else "secondary"):
-                st.session_state.current_page = "map"
-                st.session_state.mobile_nav_open = False
-                st.rerun()
-            if st.button("🧪 Call Simulator", key="m_btn_sim", use_container_width=True, type="primary" if cur_page == "simulator" else "secondary"):
-                st.session_state.current_page = "simulator"
-                st.session_state.mobile_nav_open = False
-                st.rerun()
-            if st.button("🚀 PS3 Mission", key="m_btn_ps3", use_container_width=True, type="primary" if cur_page == "ps3" else "secondary"):
-                st.session_state.current_page = "ps3"
-                st.session_state.mobile_nav_open = False
-                st.rerun()
-
-        with m_col2:
-            if st.button("⊞ Dashboard", key="m_btn_dash", use_container_width=True, type="primary" if cur_page == "dashboard" else "secondary"):
-                st.session_state.current_page = "dashboard"
-                st.session_state.mobile_nav_open = False
-                st.rerun()
-            if st.button("🛰️ Field Dispatch", key="m_btn_disp", use_container_width=True, type="primary" if cur_page == "dispatch" else "secondary"):
-                st.session_state.current_page = "dispatch"
-                st.session_state.mobile_nav_open = False
-                st.rerun()
-            if st.button("📖 Lexicon", key="m_btn_lex", use_container_width=True, type="primary" if cur_page == "lexicon" else "secondary"):
-                st.session_state.current_page = "lexicon"
-                st.session_state.mobile_nav_open = False
-                st.rerun()
-            if st.button("🛡️ Operator SOPs", key="m_btn_help", use_container_width=True, type="primary" if cur_page == "help" else "secondary"):
-                st.session_state.current_page = "help"
-                st.session_state.mobile_nav_open = False
-                st.rerun()
-            if st.button("🚪 Sign Out", key="m_btn_logout", use_container_width=True):
-                st.session_state.user = None
-                st.session_state.current_page = "login"
-                st.session_state.mobile_nav_open = False
-                st.rerun()
-
-        st.markdown("<div style='margin-top: 6px;'></div>", unsafe_allow_html=True)
-        if st.button("✕ Close / Hide Menu", key="m_btn_close_drawer", use_container_width=True):
-            st.session_state.mobile_nav_open = False
-            st.rerun()
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # Page 0: PS3 Mission & Checklist Landing Page
@@ -562,7 +386,7 @@ def page_login():
         full_logo_uri = get_logo_data_uri("full")
         st.markdown(
             f"""
-            <div class="sahaay-card login-card" style="border-radius: 14px; padding: 24px 28px; margin: 24px auto; max-width: 460px; box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.35);">
+            <div class="sahaay-card" style="border-radius: 14px; padding: 24px 28px; margin-top: 40px; box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.35);">
                 <!-- eSahaay Official Brand Logo (Compact High-DPI) -->
                 <div style="text-align: center; margin-bottom: 14px;">
                     <img src="{full_logo_uri}" style="height: 155px; width: auto; max-width: 100%; object-fit: contain; filter: drop-shadow(0 4px 16px rgba(37, 99, 235, 0.22));" alt="eSahaay Logo" />
@@ -1519,11 +1343,94 @@ def page_dashboard():
         unsafe_allow_html=True
     )
 
-    # Initialize Tactical Fleet Map with Pulsing Beacons & AntPath Corridors
-    m = build_fleet_overview_map(all_incidents, all_units, all_dispatches, is_dark=is_dark)
+    tiles_theme = "OpenStreetMap"
+    
+    # Initialize Folium Map centered on Delhi NCR
+    m = folium.Map(
+        location=[28.6250, 77.2000],
+        zoom_start=11,
+        tiles=tiles_theme,
+        control_scale=True
+    )
+
+    # Unit colors and icons
+    service_icons = {
+        "police": {"color": "blue", "icon": "shield", "prefix": "fa"},
+        "medical": {"color": "red", "icon": "ambulance", "prefix": "fa"},
+        "fire": {"color": "orange", "icon": "fire", "prefix": "fa"},
+        "shelter": {"color": "purple", "icon": "heart", "prefix": "fa"},
+        "legal": {"color": "cadetblue", "icon": "balance-scale", "prefix": "fa"}
+    }
+
+    # Plot Response Units
+    unit_coords = {}
+    for u in all_units:
+        cfg = service_icons.get(u.service_type, {"color": "gray", "icon": "car", "prefix": "fa"})
+        unit_coords[u.id] = (u.current_lat, u.current_lon)
+        
+        status_label = u.status.upper().replace("_", " ")
+        status_color = "#10B981" if u.status == "available" else ("#38BDF8" if u.status in ["assigned", "dispatched"] else "#F59E0B")
+        
+        popup_html = f"""
+        <div style="font-family: system-ui, -apple-system, sans-serif; font-size: 12px; min-width: 180px; padding: 4px;">
+            <div style="font-weight: 800; font-size: 14px; margin-bottom: 2px;">{u.unit_name}</div>
+            <div style="font-size: 11px; color: #64748B; margin-bottom: 6px;">Unit ID: {u.id} • {u.service_type.upper()}</div>
+            <div style="margin-bottom: 4px;">
+                <b>Status:</b> <span style="color: {status_color}; font-weight: 700;">{status_label}</span>
+            </div>
+            <div style="margin-bottom: 2px;"><b>Speed:</b> {u.speed_kmh:.1f} km/h</div>
+            <div style="margin-bottom: 2px;"><b>Location:</b> {u.current_lat:.4f}, {u.current_lon:.4f}</div>
+        </div>
+        """
+        
+        folium.Marker(
+            location=[u.current_lat, u.current_lon],
+            popup=folium.Popup(popup_html, max_width=260),
+            tooltip=f"{u.unit_name} ({u.service_type.capitalize()}) - {status_label}",
+            icon=folium.Icon(
+                color=cfg["color"],
+                icon=cfg["icon"],
+                prefix=cfg.get("prefix", "fa")
+            )
+        ).add_to(m)
+
+    # Plot Active Incidents and Dispatch Vector Lines
+    incident_coords = {}
+    for inc in all_incidents:
+        if inc.latitude and inc.longitude and inc.status in ["active", "in_progress", "dispatched"]:
+            incident_coords[inc.id] = (inc.latitude, inc.longitude)
+            inc_popup = f"""
+            <div style="font-family: system-ui, -apple-system, sans-serif; font-size: 12px; min-width: 200px; padding: 4px;">
+                <div style="font-weight: 800; font-size: 14px; color: {'#FF5C68' if is_dark else '#C62838'}; margin-bottom: 2px;">★ {inc.id}</div>
+                <div style="font-size: 11px; color: #64748B; margin-bottom: 6px;"><b>Threat:</b> {inc.primary_threat or 'Emergency'}</div>
+                <div style="margin-bottom: 4px;"><b>Urgency:</b> <span style="color: #EF4444; font-weight: 800;">{inc.current_urgency}</span></div>
+                <div style="margin-bottom: 2px;"><b>Locality:</b> {inc.location_text or 'Pending'}</div>
+                <div><b>Status:</b> {inc.status.upper()}</div>
+            </div>
+            """
+            folium.Marker(
+                location=[inc.latitude, inc.longitude],
+                popup=folium.Popup(inc_popup, max_width=280),
+                tooltip=f"Emergency {inc.id} ({inc.current_urgency}) - {inc.location_text}",
+                icon=folium.Icon(color="darkred", icon="warning", prefix="fa")
+            ).add_to(m)
+
+    # Draw Dispatch Trajectory PolyLines from Assigned Units to Incidents
+    for disp in all_dispatches:
+        if disp.status in ["assigned", "dispatched", "en_route"] and disp.incident_id in incident_coords and disp.unit_id in unit_coords:
+            p_unit = unit_coords[disp.unit_id]
+            p_inc = incident_coords[disp.incident_id]
+            folium.PolyLine(
+                locations=[p_unit, p_inc],
+                color="#EF4444",
+                weight=3,
+                opacity=0.8,
+                dash_array="6, 8",
+                tooltip=f"Dispatch Vector: {disp.unit_id} → {disp.incident_id} (ETA: {disp.eta_minutes:.1f}m)"
+            ).add_to(m)
 
     # Render Folium Map
-    st_folium(m, height=480, use_container_width=True)
+    st_folium(m, height=460, use_container_width=True)
 
     st.markdown("<div style='margin-top: 22px;'></div>", unsafe_allow_html=True)
 
@@ -2100,7 +2007,6 @@ def page_case_detail():
 def page_dispatch():
     render_app_header(st.session_state.user)
     db = get_db_session()
-    is_dark = st.session_state.get("theme_mode", "dark") == "dark"
 
     inc_id = st.session_state.selected_incident_id
     incident = db.query(Incident).filter(Incident.id == inc_id).first()
@@ -2113,187 +2019,94 @@ def page_dispatch():
     st.subheader(f"Field Dispatch & Unit Assignment: {incident.id}")
     st.markdown(
         f"""
-        <div style="background: {'#111C2E' if is_dark else '#FFFFFF'}; border: 1px solid {'#1E293B' if is_dark else '#E2E8F0'}; border-radius: 8px; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="background: white; border: 1px solid {PALETTE['borders']}; border-radius: 8px; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <div>
-                <span style="font-size: 16px; font-weight: 800; color: {'#38BDF8' if is_dark else '#173B57'};">{incident.id}</span>
-                <span style="margin-left: 10px; color: {'#94A3B8' if is_dark else '#286A8A'}; font-weight: 600;">{incident.primary_threat or 'Emergency'}</span>
-                <span style="margin-left: 10px; color: {'#CBD5E1' if is_dark else '#334155'};">📍 {incident.location_text or 'Delhi NCR'}</span>
+                <span style="font-size: 16px; font-weight: 700; color: #173B57;">{incident.id}</span>
+                <span style="margin-left: 10px; color: #286A8A; font-weight: 600;">{incident.primary_threat or 'Emergency'}</span>
+                <span style="margin-left: 10px;">📍 {incident.location_text or 'Delhi NCR'}</span>
             </div>
             <div>{render_priority_chip(incident.current_urgency)}</div>
         </div>
-        <div style="background: {'rgba(217, 119, 6, 0.15)' if is_dark else '#FEF3C7'}; border: 1px solid {'#D97706'}; padding: 6px 14px; border-radius: 4px; font-size: 12px; color: {'#FBBF24' if is_dark else '#92400E'}; margin-bottom: 16px;">
-            ⚠️ <b>SIMULATED DISPATCH DEMO:</b> All units, coordinates, ETAs, and tactical radio comms are simulated in a realistic CAD operations environment.
+        <div style="background: #FEF3C7; border: 1px solid #D97706; padding: 6px 14px; border-radius: 4px; font-size: 12px; color: #92400E; margin-bottom: 20px;">
+            ⚠️ <b>SIMULATED DISPATCH DEMO:</b> All units, coordinates, ETAs and dispatch actions are simulated. No real emergency services or 112 are contacted.
         </div>
         """,
         unsafe_allow_html=True
     )
 
-    # Fetch active assignments for this incident
-    active_assignments = db.query(DispatchAssignment).filter(
-        DispatchAssignment.incident_id == incident.id,
-        DispatchAssignment.status != "cancelled"
-    ).all()
+    col_units, col_assigned = st.columns([1, 1], gap="medium")
 
-    if active_assignments:
-        ass = active_assignments[0]
-        unit = db.query(ResponseUnit).filter(ResponseUnit.id == ass.unit_id).first()
+    with col_units:
+        st.subheader("Available Response Units")
+        srv_tabs = st.tabs(["Medical (Ambulance)", "Police", "Fire", "Shelter / NGO", "Legal Aid"])
+        services = ["medical", "police", "fire", "shelter", "legal"]
 
-        if unit:
-            # 1. Real-Time Telemetry HUD Ribbon
-            render_telemetry_hud(unit, ass, is_dark=is_dark)
-
-            # Direct Tactical Voice Call with Service Vehicle Control
-            call_active = st.session_state.get("active_vehicle_call", False)
-            col_vbtn, col_vstatus = st.columns([1.8, 1.2], gap="small")
-            with col_vbtn:
-                if not call_active:
-                    if st.button("📞 Call Service Vehicle Control (Direct Voice Line)", key=f"start_call_{ass.id}", type="primary", use_container_width=True):
-                        st.session_state.active_vehicle_call = True
-                        st.session_state.play_radio_chirp = True
-                        st.rerun()
-                else:
-                    if st.button("🔴 Call Active with Vehicle Commander — Click to End", key=f"stop_call_{ass.id}", use_container_width=True):
-                        st.session_state.active_vehicle_call = False
-                        st.session_state.play_radio_chirp = False
-                        st.rerun()
-            with col_vstatus:
-                call_badge_bg = "rgba(16, 185, 129, 0.15)" if is_dark else "#DCFCE7"
-                call_badge_border = "#10B981" if is_dark else "#86EFAC"
-                call_badge_color = "#10B981" if is_dark else "#166534"
-                st.markdown(
-                    f"""
-                    <div style="background: {call_badge_bg}; border: 1px solid {call_badge_border}; border-radius: 6px; padding: 7px 12px; text-align: center; font-size: 11px; font-weight: 800; color: {call_badge_color};">
-                        {'🟢 DUPLEX AUDIO CALL IN PROGRESS' if call_active else '📻 462.550 MHz VOICE STANDBY (CLICK TO CALL)'}
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-
-            # Render Voice Call Interface when call is open
-            if call_active:
-                render_tactical_voice_call_panel(
-                    db=db,
-                    incident=incident,
-                    unit=unit,
-                    assignment=ass,
-                    is_dark=is_dark,
-                    actor_id=st.session_state.user["employee_id"]
-                )
-
-            # 2. Live Tactical Mission Corridor & Moving Unit Map (Roads-Only Navigation)
-            st.markdown(
-                f"<div style='font-size: 14px; font-weight: 800; color: {'#38BDF8' if is_dark else '#173B57'}; margin-bottom: 6px;'>"
-                f"🛰️ LIVE MISSION CORRIDOR & GPS TRAJECTORY (ROAD-NETWORK NAVIGATION): {unit.unit_name} &rarr; {incident.id} [VICTIM LOCATION]"
-                f"</div>",
-                unsafe_allow_html=True
-            )
-            m_disp = build_dispatch_tactical_map(incident, unit, ass, is_dark=is_dark)
-            st_folium(
-                m_disp,
-                height=430,
-                use_container_width=True,
-                key=f"disp_map_{ass.id}_{round(unit.current_lat, 4)}_{round(unit.current_lon, 4)}"
-            )
-
-            # 3. Service Vehicle Live Movement & Navigation Controls (Following Street Roads)
-            st.markdown(
-                f"<div style='font-size: 13px; font-weight: 800; margin-top: 10px; margin-bottom: 6px; color: {'#F8FAFC' if is_dark else '#0F172A'};'>"
-                f"🚗 SERVICE VEHICLE ROAD NAVIGATION CONTROLS (ADVANCE ALONG STREETS & ROADS):"
-                f"</div>",
-                unsafe_allow_html=True
-            )
-            col_mv1, col_mv2, col_mv3, col_mv4 = st.columns([1.3, 1.3, 1.1, 1], gap="small")
-
-            with col_mv1:
-                if ass.status not in ["arrived", "completed"]:
-                    if st.button("🚗 Advance Vehicle Along Road (+25% Hop)", key=f"adv_{ass.id}", type="primary", use_container_width=True):
-                        res = advance_unit_towards_incident(db, ass.id, step_fraction=0.25, actor_id=st.session_state.user["employee_id"])
-                        if res.get("arrived"):
-                            st.success(f"🚨 {unit.unit_name} HAS ARRIVED ON SCENE AT VICTIM LOCATION!")
-                            now_str = datetime.datetime.utcnow().strftime("%H:%M:%S UTC")
-                            if "dispatch_comms" in st.session_state and incident.id in st.session_state.dispatch_comms:
-                                st.session_state.dispatch_comms[incident.id].append({
-                                    "timestamp": now_str,
-                                    "sender": f"UNIT {unit.call_sign} MDT",
-                                    "badge": "ON SCENE",
-                                    "text": f"[{unit.call_sign} MDT]: UNIT HAS ARRIVED AT SCENE VIA STREET ROUTE. Vehicle secured at curbside.",
-                                    "unit_ack": "On-scene arrival confirmed via road telemetry."
-                                })
-                        else:
-                            st.info(f"Vehicle advanced along road network to {res['unit_lat']}, {res['unit_lon']}. Remaining: {res['distance_km']} km (ETA: {res['eta_minutes']}m)")
-                        st.rerun()
-                else:
-                    st.success(f"✅ Vehicle Status: {ass.status.upper()}")
-
-            with col_mv2:
-                if ass.status not in ["arrived", "completed"]:
-                    if st.button("▶️ Drive to Scene (Street Route Simulation)", key=f"drive_{ass.id}", use_container_width=True):
-                        with st.spinner("Simulating emergency transit along road network..."):
-                            res = advance_unit_towards_incident(db, ass.id, step_fraction=0.60, actor_id=st.session_state.user["employee_id"])
-                            if res.get("arrived"):
-                                st.success("🚨 UNIT ARRIVED ON SCENE VIA ROAD NETWORK!")
-                            else:
-                                st.info(f"Transit advanced along street route: {res['distance_km']} km remaining.")
-                        st.rerun()
-
-            with col_mv3:
-                if ass.status != "completed":
-                    if st.button(f"Advance State: {ass.status.upper()} &rarr;", key=f"step_{ass.id}", use_container_width=True):
-                        res = step_assignment_simulation(db, ass.id, st.session_state.user["employee_id"])
-                        st.success(f"Status advanced to {res['new_status'].upper()}")
-                        st.rerun()
-                else:
-                    st.info("Mission Completed")
-
-            with col_mv4:
-                if st.button("Cancel / Return Unit", key=f"reset_{ass.id}", use_container_width=True):
-                    reset_unit_to_base(db, ass.unit_id)
-                    ass.status = "cancelled"
-                    db.commit()
-                    st.warning("Unit returned to base station.")
-                    st.rerun()
-
-            # 4. Service Vehicle Command & Live Tactical Radio Comms Console
-            render_tactical_comms_console(
-                db=db,
-                incident=incident,
-                unit=unit,
-                assignment=ass,
-                is_dark=is_dark,
-                actor_id=st.session_state.user["employee_id"]
-            )
-    else:
-        st.info("No service vehicle dispatched to this incident yet. Select and assign a unit below to activate live GPS tracking and the tactical radio link.")
-
-    st.markdown("<div style='margin-top: 16px;'></div>", unsafe_allow_html=True)
-
-    # 5. Response Units Available to Assign / Backup Units
-    st.subheader("Available Responder Fleet (Dispatch Units)")
-    srv_tabs = st.tabs(["Medical (Ambulance)", "Police", "Fire", "Shelter / NGO", "Legal Aid"])
-    services = ["medical", "police", "fire", "shelter", "legal"]
-
-    for idx, srv in enumerate(services):
-        with srv_tabs[idx]:
-            units_list = get_units_for_incident(db, incident.id, srv)
-            for u in units_list:
-                status_badge = f"<span style='color: #10B981; font-weight: 700;'>● {u['status'].upper()}</span>" if u['is_available'] else f"<span style='color: #F59E0B; font-weight: 700;'>○ {u['status'].upper()}</span>"
-                st.markdown(
-                    f"""
-                    <div style="background: {'#111C2E' if is_dark else '#FFFFFF'}; border: 1px solid {'#1E293B' if is_dark else '#E2E8F0'}; border-radius: 6px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <div style="font-weight: 700; color: {'#38BDF8' if is_dark else '#173B57'};">{u['unit_name']} ({u['unit_id']})</div>
-                            <div style="font-size: 12px; color: {'#94A3B8' if is_dark else '#526171'};">
-                                Distance: <b>{u['distance_km']} km</b> • ETA: <b>{u['eta_minutes']} mins</b> • Status: {status_badge}
+        for idx, srv in enumerate(services):
+            with srv_tabs[idx]:
+                units_list = get_units_for_incident(db, incident.id, srv)
+                for u in units_list:
+                    status_badge = f"<span style='color: green;'>● {u['status'].upper()}</span>" if u['is_available'] else f"<span style='color: orange;'>○ {u['status'].upper()}</span>"
+                    st.markdown(
+                        f"""
+                        <div style="background: white; border: 1px solid #E8EDF2; border-radius: 6px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 700; color: #173B57;">{u['unit_name']} ({u['unit_id']})</div>
+                                <div style="font-size: 12px; color: #526171;">
+                                    Distance: <b>{u['distance_km']} km</b> • ETA: <b>{u['eta_minutes']} mins</b> • Status: {status_badge}
+                                </div>
                             </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                    if u['is_available']:
+                        if st.button(f"Assign {u['unit_name']}", key=f"assign_{u['unit_id']}", use_container_width=True):
+                            assign_unit_to_incident(db, incident.id, u['unit_id'], st.session_state.user["employee_id"])
+                            st.success(f"{u['unit_name']} assigned successfully!")
+                            st.rerun()
+
+    with col_assigned:
+        st.subheader("Active Dispatch Assignments (State Machine)")
+        active_assignments = db.query(DispatchAssignment).filter(DispatchAssignment.incident_id == incident.id).all()
+        
+        if not active_assignments:
+            st.info("No units assigned to this incident yet. Click 'Assign' on an available unit.")
+        else:
+            for ass in active_assignments:
+                unit = db.query(ResponseUnit).filter(ResponseUnit.id == ass.unit_id).first()
+                st.markdown(
+                    f"""
+                    <div class="sahaay-panel" style="border-left: 4px solid {PALETTE['secondary_blue']};">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="font-weight: 700; font-size: 15px; color: #173B57;">{unit.unit_name if unit else ass.unit_id}</div>
+                            <span style="background: #E8EDF2; color: #173B57; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;">{ass.status.upper()}</span>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 13px; color: #253445;">
+                            <div>📍 <b>Distance Remaining:</b> {ass.distance_km:.1f} km</div>
+                            <div>⏱️ <b>Estimated ETA:</b> {ass.eta_minutes:.1f} mins</div>
+                            <div>🕒 <b>Dispatched At:</b> {ass.dispatched_at.strftime('%H:%M:%S UTC')}</div>
+                            <div>🔄 <b>Lifecycle:</b> Available &rarr; Assigned &rarr; Dispatched &rarr; Acknowledged &rarr; En route &rarr; Arrived &rarr; Completed</div>
                         </div>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
-                if u['is_available']:
-                    if st.button(f"Assign {u['unit_name']}", key=f"assign_{u['unit_id']}", use_container_width=True):
-                        assign_unit_to_incident(db, incident.id, u['unit_id'], st.session_state.user["employee_id"])
-                        st.success(f"{u['unit_name']} assigned successfully!")
+
+                col_sim1, col_sim2 = st.columns([1, 1])
+                with col_sim1:
+                    if ass.status != "completed":
+                        if st.button(f"Advance State: {ass.status.upper()} &rarr;", key=f"step_{ass.id}", use_container_width=True, type="primary"):
+                            res = step_assignment_simulation(db, ass.id, st.session_state.user["employee_id"])
+                            st.success(f"Status advanced to {res['new_status'].upper()} (Distance: {res['distance_km']} km)")
+                            st.rerun()
+                    else:
+                        st.success("✅ Mission Completed")
+                with col_sim2:
+                    if st.button(f"Cancel / Return Unit", key=f"reset_{ass.id}", use_container_width=True):
+                        reset_unit_to_base(db, ass.unit_id)
+                        ass.status = "cancelled"
+                        db.commit()
+                        st.warning("Unit returned to base station.")
                         st.rerun()
 
     db.close()
@@ -2304,22 +2117,46 @@ def page_dispatch():
 def page_map_view():
     render_app_header(st.session_state.user)
     db = get_db_session()
-    is_dark = st.session_state.get("theme_mode", "dark") == "dark"
 
     st.subheader("Geospatial Incident & Responder Fleet Map (Delhi NCR)")
-    st.caption("High-contrast tactical emergency map displaying confirmed incidents (pulsing beacons), fleet units, and active mission corridors.")
+    st.caption("Confirmed locations (solid pins), candidate locations, and simulated responder positions.")
 
     # Fetch incidents with valid coordinates
     incidents = db.query(Incident).filter(Incident.latitude.isnot(None), Incident.longitude.isnot(None)).all()
     units = db.query(ResponseUnit).all()
-    dispatches = db.query(DispatchAssignment).all()
 
     col_map, col_list = st.columns([3, 1], gap="medium")
 
     with col_map:
         try:
-            m = build_fleet_overview_map(incidents, units, dispatches, is_dark=is_dark)
-            st_folium(m, height=560, use_container_width=True)
+            import folium
+            from streamlit_folium import st_folium
+
+            # Center map on Delhi
+            m = folium.Map(location=[28.6250, 77.2000], zoom_start=12, tiles="OpenStreetMap")
+
+            # Add Incident Markers
+            for inc in incidents:
+                color = "red" if inc.current_urgency == "P0" else "orange" if inc.current_urgency == "P1" else "blue"
+                folium.Marker(
+                    location=[inc.latitude, inc.longitude],
+                    popup=f"<b>{inc.id}</b><br>{inc.primary_threat}<br>Priority: {inc.current_urgency}<br>Source: {inc.location_source}",
+                    tooltip=f"{inc.id} ({inc.current_urgency})",
+                    icon=folium.Icon(color=color, icon="exclamation-sign")
+                ).add_to(m)
+
+            # Add Responder Markers
+            for u in units:
+                icon_color = "green" if u.service_type == "medical" else "darkblue" if u.service_type == "police" else "purple"
+                folium.Marker(
+                    location=[u.current_lat, u.current_lon],
+                    popup=f"<b>{u.unit_name}</b><br>Service: {u.service_type.upper()}<br>Status: {u.status}",
+                    tooltip=f"{u.unit_name} ({u.status})",
+                    icon=folium.Icon(color=icon_color, icon="info-sign")
+                ).add_to(m)
+
+            st_folium(m, width=850, height=520)
+
         except Exception as e:
             st.warning(f"Folium map component: {e}. Displaying tabular location overview.")
             loc_rows = []
@@ -2340,27 +2177,17 @@ def page_map_view():
         for inc in incidents:
             st.markdown(
                 f"""
-                <div style="background: {'#111C2E' if is_dark else '#FFFFFF'}; border: 1px solid {'#1E293B' if is_dark else '#E2E8F0'}; border-radius: 6px; padding: 10px; margin-bottom: 8px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-weight: 800; color: {'#38BDF8' if is_dark else '#173B57'};">{inc.id}</span>
-                        {render_priority_chip(inc.current_urgency)}
-                    </div>
-                    <div style="font-size: 11px; color: {'#94A3B8' if is_dark else '#526171'}; margin-top: 4px;">[Loc] {inc.location_text or 'Delhi'}</div>
+                <div style="background: white; border: 1px solid #E8EDF2; border-radius: 6px; padding: 10px; margin-bottom: 8px;">
+                    <div style="font-weight: 700; color: #173B57;">{inc.id} ({inc.current_urgency})</div>
+                    <div style="font-size: 12px; color: #526171;">[Loc] {inc.location_text or 'Delhi'}</div>
                 </div>
                 """,
                 unsafe_allow_html=True
             )
-            col_sel1, col_sel2 = st.columns([1, 1])
-            with col_sel1:
-                if st.button("Review", key=f"sel_map_rev_{inc.id}", use_container_width=True):
-                    st.session_state.selected_incident_id = inc.id
-                    st.session_state.current_page = "incidents"
-                    st.rerun()
-            with col_sel2:
-                if st.button("📡 Track & Comms", key=f"sel_map_disp_{inc.id}", use_container_width=True, type="primary"):
-                    st.session_state.selected_incident_id = inc.id
-                    st.session_state.current_page = "dispatch"
-                    st.rerun()
+            if st.button("Select Incident", key=f"sel_map_{inc.id}"):
+                st.session_state.selected_incident_id = inc.id
+                st.session_state.current_page = "incidents"
+                st.rerun()
 
     db.close()
 
@@ -2899,7 +2726,6 @@ def main():
         return
 
     render_sidebar()
-    render_mobile_nav_bar()
     page = st.session_state.current_page
 
     if page == "dashboard":
@@ -2908,26 +2734,6 @@ def main():
         page_incidents()
     elif page == "case_detail":
         page_case_detail()
-    elif page == "dispatch":
-        page_dispatch()
-    elif page == "map":
-        page_map_view()
-    elif page == "simulator":
-        page_simulator()
-    elif page == "repeats":
-        page_repeat_review()
-    elif page == "lexicon":
-        page_lexicon()
-    elif page == "eval":
-        page_eval()
-    elif page == "impact":
-        page_impact()
-    elif page == "admin":
-        page_admin()
-    elif page == "help":
-        page_help()
-    elif page == "ps3":
-        page_ps3()
     else:
         page_triage()
 

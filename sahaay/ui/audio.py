@@ -91,32 +91,3 @@ def get_ringtone_b64() -> str:
     b = get_ringtone_bytes()
     _CACHED_B64 = base64.b64encode(b).decode("ascii")
     return _CACHED_B64
-
-_CACHED_CHIRP_B64: Optional[str] = None
-
-def get_radio_chirp_b64() -> str:
-    """Return base64-encoded tactical radio chirp / Roger bleep sound effect."""
-    global _CACHED_CHIRP_B64
-    if _CACHED_CHIRP_B64 is not None:
-        return _CACHED_CHIRP_B64
-    sr = 22050
-    frames = []
-    # Two-tone radio chirp (1200 Hz -> 1800 Hz)
-    for i in range(int(sr * 0.07)):
-        t = i / sr
-        env = min(i / (sr * 0.01), 1.0) * min((int(sr * 0.07) - i) / (sr * 0.01), 1.0)
-        val = int(math.sin(2 * math.pi * 1200 * t) * 22000 * env)
-        frames.append(struct.pack("<h", val))
-    for i in range(int(sr * 0.07)):
-        t = i / sr
-        env = min(i / (sr * 0.01), 1.0) * min((int(sr * 0.07) - i) / (sr * 0.01), 1.0)
-        val = int(math.sin(2 * math.pi * 1800 * t) * 22000 * env)
-        frames.append(struct.pack("<h", val))
-    buf = io.BytesIO()
-    with wave.open(buf, "wb") as wf:
-        wf.setnchannels(1)
-        wf.setsampwidth(2)
-        wf.setframerate(sr)
-        wf.writeframes(b"".join(frames))
-    _CACHED_CHIRP_B64 = base64.b64encode(buf.getvalue()).decode("ascii")
-    return _CACHED_CHIRP_B64
