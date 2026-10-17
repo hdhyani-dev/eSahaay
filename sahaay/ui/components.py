@@ -41,12 +41,12 @@ def get_logo_data_uri(kind: str = "full") -> str:
 def get_logo_html(width: int = 210) -> str:
     """Generate HTML image tag for full eSahaay logo."""
     uri = get_logo_data_uri("full")
-    return f'<img src="{uri}" style="width: {width}px; max-width: 100%; height: auto; object-fit: contain;" alt="eSahaay Logo" />'
+    return f'<img src="{uri}" style="width: {width}px; height: auto; object-fit: contain;" alt="eSahaay Logo" />'
 
 def get_emblem_html(width: int = 34) -> str:
     """Generate HTML image tag for compact eSahaay emblem."""
     uri = get_logo_data_uri("emblem")
-    return f'<img src="{uri}" style="width: {width}px; max-width: 100%; height: auto; object-fit: contain;" alt="eSahaay" />'
+    return f'<img src="{uri}" style="width: {width}px; height: auto; object-fit: contain;" alt="eSahaay" />'
 
 # Compatibility SVG variables (fallback if image not loaded)
 LOGO_SVG = get_emblem_html(34)

@@ -469,176 +469,6 @@ def get_theme_css(mode: str = "dark") -> str:
             color: #7E22CE !important;
             border: 1px solid rgba(168, 85, 247, 0.3) !important;
         }
-
-        /* =====================================================================
-           LIGHT MODE FORM CONTROLS & INPUT VISIBILITY OVERRIDES
-           Enforce pure white background & crisp dark text on all text inputs,
-           passwords (Badge ID, PIN), search bars, and dropdown selectboxes.
-           ===================================================================== */
-        /* Text inputs, Password inputs, Search boxes, and Number inputs */
-        div[data-testid="stTextInput"],
-        div[data-testid="stTextInputRootElement"],
-        div[data-testid="stTextInput"] > div,
-        div[data-testid="stTextInputRootElement"] > div {
-            color: #142238 !important;
-        }
-
-        div[data-testid="stTextInput"] label,
-        div[data-testid="stTextInput"] label p,
-        div[data-testid="stSelectbox"] label,
-        div[data-testid="stSelectbox"] label p,
-        div[data-testid="stMultiSelect"] label,
-        div[data-testid="stMultiSelect"] label p {
-            color: #142238 !important;
-            font-weight: 700 !important;
-        }
-
-        /* Outer Box for Text & Password Inputs (Badge ID, PIN, Search) */
-        div[data-testid="stTextInput"] div[data-baseweb="input"],
-        div[data-testid="stTextInput"] div[data-baseweb="base-input"],
-        div[data-testid="stTextInputRootElement"] div[data-baseweb="input"],
-        div[data-testid="stTextInputRootElement"] div[data-baseweb="base-input"],
-        div[data-baseweb="input"],
-        div[data-baseweb="base-input"] {
-            background-color: #FFFFFF !important;
-            background: #FFFFFF !important;
-            border: 1.5px solid #CBD5E1 !important;
-            border-radius: 8px !important;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-        }
-
-        div[data-baseweb="input"]:focus-within,
-        div[data-baseweb="base-input"]:focus-within,
-        div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within {
-            border-color: #007F9E !important;
-            box-shadow: 0 0 0 3px rgba(0, 127, 158, 0.15) !important;
-        }
-
-        /* Inner container wrappers */
-        div[data-baseweb="input"] > div,
-        div[data-baseweb="base-input"] > div {
-            background-color: #FFFFFF !important;
-            background: #FFFFFF !important;
-        }
-
-        /* Actual Text & Password Input Fields */
-        div[data-testid="stTextInput"] input,
-        div[data-testid="stTextInputRootElement"] input,
-        div[data-baseweb="input"] input,
-        div[data-baseweb="base-input"] input,
-        input[type="text"],
-        input[type="password"],
-        input {
-            background-color: #FFFFFF !important;
-            background: #FFFFFF !important;
-            color: #142238 !important;
-            caret-color: #007F9E !important;
-            font-weight: 600 !important;
-            font-size: 13.5px !important;
-        }
-
-        /* Placeholder */
-        div[data-testid="stTextInput"] input::placeholder,
-        div[data-baseweb="input"] input::placeholder,
-        input::placeholder,
-        textarea::placeholder {
-            color: #64748B !important;
-            opacity: 1 !important;
-            font-weight: 400 !important;
-        }
-
-        /* Password reveal / clear / action icons inside inputs */
-        div[data-baseweb="input"] button,
-        div[data-baseweb="input"] svg,
-        div[data-baseweb="input"] path {
-            color: #52647B !important;
-            fill: #52647B !important;
-        }
-
-        /* Selectboxes: Emergency Category, Resolution Status, Priority Level */
-        div[data-testid="stSelectbox"],
-        div[data-testid="stSelectbox"] > div,
-        div[data-testid="stSelectbox"] div[data-baseweb="select"],
-        div[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
-        div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:first-child,
-        div[data-baseweb="select"],
-        div[data-baseweb="select"] > div,
-        div[data-baseweb="select"] > div:first-child,
-        div[data-testid="stMultiSelect"] div[data-baseweb="select"],
-        div[data-testid="stMultiSelect"] div[data-baseweb="select"] > div {
-            background-color: #FFFFFF !important;
-            background: #FFFFFF !important;
-            border: 1.5px solid #CBD5E1 !important;
-            border-radius: 8px !important;
-            color: #142238 !important;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-        }
-
-        div[data-baseweb="select"]:focus-within,
-        div[data-baseweb="select"] > div:focus-within {
-            border-color: #007F9E !important;
-            box-shadow: 0 0 0 3px rgba(0, 127, 158, 0.15) !important;
-        }
-
-        /* Text and content inside selectbox controls */
-        div[data-baseweb="select"] div,
-        div[data-baseweb="select"] span,
-        div[data-baseweb="select"] p,
-        div[data-baseweb="select"] [role="combobox"],
-        div[data-baseweb="select"] input {
-            color: #142238 !important;
-            background-color: transparent !important;
-            font-weight: 600 !important;
-            font-size: 13.5px !important;
-        }
-
-        /* Select dropdown arrow icon */
-        div[data-baseweb="select"] svg,
-        div[data-baseweb="select"] path {
-            fill: #52647B !important;
-            color: #52647B !important;
-        }
-
-        /* Dropdown Popover Listbox (when selectbox is clicked open) */
-        div[data-baseweb="popover"],
-        div[data-baseweb="popover"] > div,
-        div[data-baseweb="popover"] ul,
-        div[data-baseweb="popover"] ul[role="listbox"],
-        ul[role="listbox"],
-        div[data-baseweb="menu"],
-        div[data-baseweb="menu"] ul {
-            background-color: #FFFFFF !important;
-            background: #FFFFFF !important;
-            border: 1.5px solid #CBD5E1 !important;
-            border-radius: 8px !important;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
-            color: #142238 !important;
-        }
-
-        /* Options inside the open dropdown */
-        li[role="option"],
-        div[data-baseweb="popover"] li,
-        ul[role="listbox"] li {
-            background-color: #FFFFFF !important;
-            background: #FFFFFF !important;
-            color: #142238 !important;
-        }
-
-        li[role="option"] *,
-        div[data-baseweb="popover"] li * {
-            color: #142238 !important;
-        }
-
-        /* Hovered & Selected Dropdown Option */
-        li[role="option"]:hover,
-        li[role="option"]:hover *,
-        li[role="option"][aria-selected="true"],
-        li[role="option"][aria-selected="true"] * {
-            background-color: #E8EFF7 !important;
-            background: #E8EFF7 !important;
-            color: #007F9E !important;
-            font-weight: 700 !important;
-        }
         """
 
     return f"""
@@ -925,22 +755,19 @@ def get_theme_css(mode: str = "dark") -> str:
     div[data-baseweb="input"],
     div[data-baseweb="base-input"] {{
         background-color: {'#19283D' if is_dark else '#FFFFFF'} !important;
-        background: {'#19283D' if is_dark else '#FFFFFF'} !important;
         border: 1.5px solid {'#304158' if is_dark else '#CBD5E1'} !important;
         border-radius: 8px !important;
     }}
 
     div[data-testid="stTextInput"] input,
     div[data-baseweb="input"] input,
-    div[data-baseweb="base-input"] input,
     input, textarea {{
         background-color: {'#19283D' if is_dark else '#FFFFFF'} !important;
-        background: {'#19283D' if is_dark else '#FFFFFF'} !important;
         color: {'#F1F5F9' if is_dark else '#142238'} !important;
         caret-color: {'#22D3EE' if is_dark else '#007F9E'} !important;
         cursor: text !important;
         font-size: 13.5px !important;
-        font-weight: 600 !important;
+        font-weight: 500 !important;
     }}
 
     div[data-testid="stTextInput"] div[data-baseweb="input"],
@@ -955,11 +782,9 @@ def get_theme_css(mode: str = "dark") -> str:
     input[aria-label*="Search"],
     input[type="text"] {{
         background-color: {'#19283D' if is_dark else '#FFFFFF'} !important;
-        background: {'#19283D' if is_dark else '#FFFFFF'} !important;
         color: {'#F1F5F9' if is_dark else '#142238'} !important;
         caret-color: {'#22D3EE' if is_dark else '#007F9E'} !important;
         cursor: text !important;
-        font-weight: 600 !important;
     }}
 
     div[data-testid="stTextInput"] input::placeholder,
@@ -973,11 +798,8 @@ def get_theme_css(mode: str = "dark") -> str:
 
     div[data-testid="stSelectbox"] div[data-baseweb="select"],
     div[data-baseweb="select"],
-    div[data-baseweb="select"] > div,
-    div[data-testid="stMultiSelect"] div[data-baseweb="select"],
-    div[data-testid="stMultiSelect"] div[data-baseweb="select"] > div {{
+    div[data-baseweb="select"] > div {{
         background-color: {'#19283D' if is_dark else '#FFFFFF'} !important;
-        background: {'#19283D' if is_dark else '#FFFFFF'} !important;
         border: 1.5px solid {'#304158' if is_dark else '#CBD5E1'} !important;
         border-radius: 8px !important;
         color: {'#F1F5F9' if is_dark else '#142238'} !important;
@@ -1537,151 +1359,6 @@ def get_theme_css(mode: str = "dark") -> str:
         background: rgba(100, 116, 139, {'0.18' if is_dark else '0.12'}) !important;
         color: {'#CBD5E1' if is_dark else '#475569'} !important;
         border: 1px solid rgba(100, 116, 139, 0.35) !important;
-    }}
-
-    /* ==========================================================================
-       MOBILE RESPONSIVENESS & TOUCH OPTIMIZATIONS (Smartphones & Small Tablets)
-       ========================================================================== */
-    @media screen and (max-width: 768px) {{
-        /* Container and Spacing */
-        .main .block-container {{
-            padding: 1rem 0.65rem 4rem 0.65rem !important;
-            max-width: 100% !important;
-        }}
-
-        /* Top Enterprise App-Bar */
-        .sahaay-header {{
-            flex-direction: column !important;
-            align-items: flex-start !important;
-            gap: 12px !important;
-            padding: 12px 14px !important;
-            border-radius: 10px !important;
-            margin-bottom: 14px !important;
-        }}
-        .sahaay-header > div:last-child {{
-            width: 100% !important;
-            display: flex !important;
-            flex-wrap: wrap !important;
-            justify-content: space-between !important;
-            gap: 8px !important;
-        }}
-        .sahaay-brand-title {{
-            gap: 10px !important;
-        }}
-        .sahaay-brand-name {{
-            font-size: 16px !important;
-        }}
-        .sahaay-tagline {{
-            font-size: 10.5px !important;
-            line-height: 1.3 !important;
-        }}
-        .system-status-capsule {{
-            font-size: 11px !important;
-            padding: 4px 10px !important;
-        }}
-        .operator-profile-pill {{
-            font-size: 11px !important;
-            padding: 4px 10px !important;
-        }}
-
-        /* Floating Theme Toggle on Mobile */
-        div.st-key-top_right_theme_toggle,
-        div[class*="st-key-top_right_theme_toggle"],
-        div[data-testid="stElementContainer"]:has(button[key="top_right_theme_toggle"]) {{
-            top: 10px !important;
-            right: 12px !important;
-            width: 36px !important;
-            height: 36px !important;
-            min-width: 36px !important;
-            min-height: 36px !important;
-        }}
-        div.st-key-top_right_theme_toggle button,
-        button[key="top_right_theme_toggle"] {{
-            width: 36px !important;
-            height: 36px !important;
-            min-width: 36px !important;
-            min-height: 36px !important;
-            font-size: 14px !important;
-        }}
-
-        /* Horizontal Column Layouts: Auto-wrap on mobile */
-        [data-testid="stHorizontalBlock"] {{
-            flex-wrap: wrap !important;
-            gap: 0.75rem !important;
-        }}
-        [data-testid="stHorizontalBlock"] > [data-testid="column"] {{
-            min-width: 100% !important;
-            flex: 1 1 100% !important;
-        }}
-
-        /* Responsive Metric Grids */
-        .grid, [data-testid="stMetric"] {{
-            min-width: 100% !important;
-        }}
-        .grid {{
-            grid-template-columns: 1fr 1fr !important;
-            gap: 10px !important;
-        }}
-
-        /* CAD Cards & Triage Cards */
-        .cad-card, .triage-card, .evidence-card, .summary-card {{
-            padding: 12px 14px !important;
-            margin-bottom: 12px !important;
-            border-radius: 8px !important;
-        }}
-
-        /* Touch-Friendly Form Controls & Buttons */
-        button, .stButton > button {{
-            min-height: 44px !important;
-            font-size: 13.5px !important;
-            padding: 8px 14px !important;
-            touch-action: manipulation !important;
-        }}
-
-        /* Inputs & Select Boxes */
-        input, select, textarea, .stTextInput > div > div > input {{
-            font-size: 14px !important;
-            min-height: 42px !important;
-        }}
-
-        /* Tables and Telemetry Data: Horizontal scrollable */
-        div[data-testid="stTable"], .stDataFrame, table {{
-            display: block !important;
-            width: 100% !important;
-            overflow-x: auto !important;
-            -webkit-overflow-scrolling: touch !important;
-        }}
-
-        /* Softphone Call Bar */
-        .call-active-bar, .incoming-call-box {{
-            padding: 10px 12px !important;
-            font-size: 12px !important;
-        }}
-
-        /* Badges & Chips */
-        .badge-p0, .badge-p1, .badge-p2, .badge-p3 {{
-            font-size: 11px !important;
-            padding: 3px 8px !important;
-        }}
-    }}
-
-    @media screen and (max-width: 480px) {{
-        .sahaay-brand-title img {{
-            height: 30px !important;
-        }}
-        .sahaay-brand-name {{
-            font-size: 15px !important;
-        }}
-        .grid {{
-            grid-template-columns: 1fr !important;
-        }}
-        .system-status-capsule span:nth-child(3),
-        .system-status-capsule span:nth-child(4) {{
-            display: none !important;
-        }}
-        .operator-profile-pill div:last-child span:last-child {{
-            display: none !important;
-        }}
     }}
 
     /* Custom Theme Rules for Dark vs Light Elements */
