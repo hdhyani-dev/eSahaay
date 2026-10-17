@@ -775,7 +775,7 @@ def get_theme_css(mode: str = "dark") -> str:
         transform: translateY(-0.5px) !important;
     }}
 
-    /* Form Controls & Filter Inputs (High Contrast in both Dark & Light Themes) */
+    /* Form Controls & Filter Inputs (Theme-Adaptive Solid Surfaces) */
     div[data-testid="stTextInput"] label,
     div[data-testid="stTextInput"] label p,
     div[data-testid="stSelectbox"] label,
@@ -786,11 +786,25 @@ def get_theme_css(mode: str = "dark") -> str:
         letter-spacing: -0.01em !important;
     }}
 
-    /* Text Inputs: Single outer border, clean background, no dark underline bars */
+    /* Text Inputs: All wrapper layers and input element have solid theme background */
     div[data-testid="stTextInput"] div[data-baseweb="input"],
-    div[data-baseweb="input"] {{
+    div[data-testid="stTextInputRootElement"],
+    div[data-baseweb="input"],
+    div[data-testid="stTextInput"] div[data-baseweb="base-input"],
+    div[data-baseweb="base-input"],
+    div[data-testid="stTextInput"] input,
+    div[data-baseweb="input"] input,
+    input, textarea {{
         background-color: {'#19283D' if is_dark else '#FFFFFF'} !important;
         background: {'#19283D' if is_dark else '#FFFFFF'} !important;
+        color: {'#F1F5F9' if is_dark else '#142238'} !important;
+        caret-color: {'#22D3EE' if is_dark else '#007F9E'} !important;
+    }}
+
+    /* Single clean outer border exclusively on the outer container */
+    div[data-testid="stTextInput"] div[data-baseweb="input"],
+    div[data-testid="stTextInputRootElement"],
+    div[data-baseweb="input"] {{
         border: 1.5px solid {'#304158' if is_dark else '#CBD5E1'} !important;
         border-radius: 8px !important;
         box-shadow: none !important;
@@ -798,9 +812,35 @@ def get_theme_css(mode: str = "dark") -> str:
         transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
     }}
 
+    div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within,
+    div[data-testid="stTextInputRootElement"]:focus-within,
+    div[data-baseweb="input"]:focus-within {{
+        border-color: {'#22D3EE' if is_dark else '#007F9E'} !important;
+        box-shadow: 0 0 0 1px {'#22D3EE' if is_dark else '#007F9E'} !important;
+    }}
+
+    /* Inner base-input and input: NO borders or shadows (prevents double lines & blue bars) */
+    div[data-testid="stTextInput"] div[data-baseweb="base-input"],
+    div[data-baseweb="base-input"],
+    div[data-testid="stTextInput"] input,
+    div[data-baseweb="input"] input,
+    input, textarea {{
+        border: none !important;
+        border-top: none !important;
+        border-bottom: none !important;
+        border-left: none !important;
+        border-right: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        font-size: 13.5px !important;
+        font-weight: 500 !important;
+    }}
+
     /* Remove BaseWeb default pseudo-element underline bars, indicator bars & shadows */
     div[data-testid="stTextInput"] div[data-baseweb="input"]::before,
     div[data-testid="stTextInput"] div[data-baseweb="input"]::after,
+    div[data-testid="stTextInputRootElement"]::before,
+    div[data-testid="stTextInputRootElement"]::after,
     div[data-baseweb="input"]::before,
     div[data-baseweb="input"]::after,
     div[data-baseweb="base-input"]::before,
@@ -811,53 +851,14 @@ def get_theme_css(mode: str = "dark") -> str:
         box-shadow: none !important;
     }}
 
-    /* Inner base-input wrapper: 100% transparent, NO borders, NO double outlines */
-    div[data-testid="stTextInput"] div[data-baseweb="base-input"],
-    div[data-baseweb="base-input"] {{
-        background-color: transparent !important;
-        background: transparent !important;
-        border: none !important;
-        border-bottom: none !important;
-        border-top: none !important;
-        border-left: none !important;
-        border-right: none !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
-        padding: 0 !important;
-        cursor: text !important;
-    }}
-
-    /* Input Element: Inherits clean background, correct text color */
-    div[data-testid="stTextInput"] input,
-    div[data-baseweb="input"] input,
-    input, textarea {{
-        background-color: transparent !important;
-        background: transparent !important;
-        border: none !important;
-        border-bottom: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-        color: {'#F1F5F9' if is_dark else '#142238'} !important;
-        caret-color: {'#22D3EE' if is_dark else '#007F9E'} !important;
-        cursor: text !important;
-        font-size: 13.5px !important;
-        font-weight: 500 !important;
-    }}
-
-    div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within,
-    div[data-baseweb="input"]:focus-within {{
-        border-color: {'#22D3EE' if is_dark else '#007F9E'} !important;
-        box-shadow: 0 0 0 1px {'#22D3EE' if is_dark else '#007F9E'} !important;
-    }}
-
     /* Search History input - ensure crystal clear text and cursor */
     div[data-testid="stTextInput"]:has(input[placeholder*="Search"]) input,
     div[data-testid="stTextInput"]:has(input[aria-label*="Search"]) input,
     input[placeholder*="Search"],
     input[aria-label*="Search"],
     input[type="text"] {{
-        background-color: transparent !important;
-        background: transparent !important;
+        background-color: {'#19283D' if is_dark else '#FFFFFF'} !important;
+        background: {'#19283D' if is_dark else '#FFFFFF'} !important;
         color: {'#F1F5F9' if is_dark else '#142238'} !important;
         caret-color: {'#22D3EE' if is_dark else '#007F9E'} !important;
         cursor: text !important;
@@ -877,8 +878,8 @@ def get_theme_css(mode: str = "dark") -> str:
     div[data-baseweb="input"] > div:nth-child(2),
     div[data-baseweb="base-input"] + div,
     div[data-testid="stTextInput"] div[data-baseweb="input"] > div:last-child {{
-        background: transparent !important;
-        background-color: transparent !important;
+        background-color: {'#19283D' if is_dark else '#FFFFFF'} !important;
+        background: {'#19283D' if is_dark else '#FFFFFF'} !important;
         border: none !important;
         box-shadow: none !important;
         padding-right: 6px !important;
@@ -914,7 +915,7 @@ def get_theme_css(mode: str = "dark") -> str:
         color: inherit !important;
     }}
 
-    /* Selectbox Filters: Outer container is completely transparent & borderless. Only inner pill has border */
+    /* Selectbox Filters: Outer container is completely transparent & borderless */
     div[data-testid="stSelectbox"] div[data-baseweb="select"],
     div[data-baseweb="select"] {{
         background: transparent !important;
@@ -936,13 +937,24 @@ def get_theme_css(mode: str = "dark") -> str:
         box-shadow: none !important;
     }}
 
+    /* Selectbox Inner Control Pill and ALL Children have solid background */
     div[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
-    div[data-baseweb="select"] > div {{
+    div[data-baseweb="select"] > div,
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] > div div,
+    div[data-baseweb="select"] > div div,
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] span,
+    div[data-baseweb="select"] span,
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] p,
+    div[data-baseweb="select"] p {{
         background-color: {'#19283D' if is_dark else '#FFFFFF'} !important;
         background: {'#19283D' if is_dark else '#FFFFFF'} !important;
+        color: {'#F1F5F9' if is_dark else '#142238'} !important;
+    }}
+
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+    div[data-baseweb="select"] > div {{
         border: 1.5px solid {'#304158' if is_dark else '#CBD5E1'} !important;
         border-radius: 8px !important;
-        color: {'#F1F5F9' if is_dark else '#142238'} !important;
         box-shadow: none !important;
         transition: border-color 0.15s ease !important;
     }}
@@ -952,15 +964,6 @@ def get_theme_css(mode: str = "dark") -> str:
     div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:focus-within,
     div[data-baseweb="select"] > div:focus-within {{
         border-color: {'#22D3EE' if is_dark else '#007F9E'} !important;
-    }}
-
-    div[data-baseweb="select"] div,
-    div[data-baseweb="select"] span,
-    div[data-baseweb="select"] p,
-    div[data-baseweb="select"] * {{
-        color: {'#F1F5F9' if is_dark else '#142238'} !important;
-        font-size: 13.5px !important;
-        font-weight: 500 !important;
     }}
 
     div[data-baseweb="select"] svg {{
