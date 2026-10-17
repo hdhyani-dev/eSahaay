@@ -97,3 +97,25 @@ def test_tactical_map_builders(db: Session):
     all_dispatches = db.query(DispatchAssignment).all()
     fleet_map = build_fleet_overview_map(all_incidents, all_units, all_dispatches, is_dark=True)
     assert fleet_map is not None
+
+def test_road_router_waypoints():
+    from sahaay.dispatch.road_router import get_road_route_waypoints, calculate_remaining_road_km
+    # Connaught Place to India Gate
+    start_lat, start_lon = 28.6304, 77.2177
+    dest_lat, dest_lon = 28.6129, 77.2295
+    waypoints = get_road_route_waypoints(start_lat, start_lon, dest_lat, dest_lon)
+    assert isinstance(waypoints, list)
+    assert len(waypoints) >= 2
+    # Verify coordinates are in valid Delhi NCR range
+    for pt in waypoints:
+        assert 28.0 <= pt[0] <= 29.0
+        assert 76.5 <= pt[1] <= 78.0
+
+    rem_km = calculate_remaining_road_km(waypoints, from_idx=0)
+    assert rem_km > 0.0
+
+def test_radio_audio_chirp():
+    from sahaay.ui.audio import get_radio_chirp_b64
+    b64_data = get_radio_chirp_b64()
+    assert isinstance(b64_data, str)
+    assert len(b64_data) > 100

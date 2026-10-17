@@ -7,10 +7,12 @@ from typing import Dict, Any, List, Optional, Tuple
 import folium
 from folium.plugins import AntPath
 
-# Tile providers
-DARK_TILES_URL = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-LIGHT_TILES_URL = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-CARTO_ATTR = '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+# Free Basemap Tiles (Zero API Key Required)
+OSM_TILES = "OpenStreetMap"
+OSM_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+
+from sahaay.dispatch.road_router import get_road_route_waypoints, find_closest_waypoint_index
+from sahaay.ui.audio import get_radio_chirp_b64
 
 # Service Type Visual Configuration
 SERVICE_CONFIG = {
@@ -165,17 +167,29 @@ def build_dispatch_tactical_map(
     speed_kmh = getattr(unit, "speed_kmh", 55.0)
 
     # Center map midway between unit and incident
+    # Center map midway between unit and incident
     mid_lat = (inc_lat + unit_lat) / 2.0
     mid_lon = (inc_lon + unit_lon) / 2.0
 
-    tiles_url = DARK_TILES_URL if is_dark else LIGHT_TILES_URL
+    # 100% Free OpenStreetMap Basemap (Zero API Key Required)
     m = folium.Map(
         location=[mid_lat, mid_lon],
         zoom_start=zoom_start,
-        tiles=tiles_url,
-        attr=CARTO_ATTR,
+        tiles=OSM_TILES,
         control_scale=True
     )
+    if is_dark:
+        dark_tile_css = """
+        <style>
+        .leaflet-tile {
+            filter: brightness(0.65) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7) !important;
+        }
+        .leaflet-container {
+            background: #0B1320 !important;
+        }
+        </style>
+        """
+        m.get_root().html.add_child(folium.Element(dark_tile_css))
 
     # 1. Casualty Hazard Zone (Translucent outer radius around victim)
     folium.Circle(
@@ -220,7 +234,14 @@ def build_dispatch_tactical_map(
         tooltip=f"Incident {incident.id} [{urg_cfg['label']}] - {getattr(incident, 'location_text', 'Scene')}"
     ).add_to(m)
 
-    # 3. Base Station Departure Point Marker (if different from unit position)
+    # 3. Calculate Street Road Waypoints (Strictly along actual road network, never cutting through buildings)
+    road_waypoints = get_road_route_waypoints(base_lat, base_lon, inc_lat, inc_lon)
+    cur_idx = find_closest_waypoint_index(road_waypoints, unit_lat, unit_lon)
+
+    traveled_waypoints = road_waypoints[:cur_idx + 1] if cur_idx > 0 else []
+    remaining_waypoints = road_waypoints[cur_idx:] if cur_idx < len(road_waypoints) - 1 else [road_waypoints[-1], (inc_lat, inc_lon)]
+
+    # Base Station Departure Point Marker
     if abs(base_lat - unit_lat) > 0.001 or abs(base_lon - unit_lon) > 0.001:
         folium.CircleMarker(
             location=[base_lat, base_lon],
@@ -233,15 +254,16 @@ def build_dispatch_tactical_map(
             tooltip=f"Base Station: {unit.unit_name} Departure Station"
         ).add_to(m)
 
-        # Traveled Trail (Dotted subtle line from Base to Unit current location)
-        folium.PolyLine(
-            locations=[[base_lat, base_lon], [unit_lat, unit_lon]],
-            color="#64748B",
-            weight=2.5,
-            opacity=0.6,
-            dash_array="4, 6",
-            tooltip="Traveled Path Vector"
-        ).add_to(m)
+        # Traveled Trail along actual road network
+        if len(traveled_waypoints) >= 2:
+            folium.PolyLine(
+                locations=traveled_waypoints,
+                color="#64748B",
+                weight=3,
+                opacity=0.6,
+                dash_array="4, 6",
+                tooltip="Traveled Road Corridor"
+            ).add_to(m)
 
     # 4. Service Vehicle Marker DivIcon
     vehicle_pulse = "box-shadow: 0 0 16px " + srv_cfg["color"] + ";" if unit_status in ["EN_ROUTE", "DISPATCHED"] else ""
@@ -278,38 +300,38 @@ def build_dispatch_tactical_map(
         tooltip=f"{unit.unit_name} ({srv_cfg['label']}) - {unit_status} • ETA {eta_mins:.1f}m"
     ).add_to(m)
 
-    # 5. Glowing Active Route Trajectory from Service Vehicle to Victim
-    if abs(unit_lat - inc_lat) > 0.0005 or abs(unit_lon - inc_lon) > 0.0005:
-        # Subtle glow underlay
+    # 5. Glowing Active Route Trajectory strictly along actual street road network to victim
+    if len(remaining_waypoints) >= 2:
+        # Subtle road glow underlay
         folium.PolyLine(
-            locations=[[unit_lat, unit_lon], [inc_lat, inc_lon]],
+            locations=remaining_waypoints,
             color=srv_cfg["color"],
             weight=7,
             opacity=0.35
         ).add_to(m)
 
-        # Animated AntPath flowing trajectory
+        # Animated AntPath flowing trajectory along actual streets/avenues
         AntPath(
-            locations=[[unit_lat, unit_lon], [inc_lat, inc_lon]],
+            locations=remaining_waypoints,
             color=srv_cfg["color"],
             pulse_color="#FFFFFF" if is_dark else "#1E293B",
             weight=4,
             opacity=0.9,
             dash_array=[10, 20],
             delay=800,
-            tooltip=f"Active Corridor: {unit.unit_name} → Victim ({dist_km:.1f} km, ETA {eta_mins:.1f}m)"
+            tooltip=f"Street Route: {unit.unit_name} → Victim ({dist_km:.1f} km, ETA {eta_mins:.1f}m)"
         ).add_to(m)
 
-        # Midpoint ETA Callout Tag
-        mid_traj_lat = (unit_lat + inc_lat) / 2.0
-        mid_traj_lon = (unit_lon + inc_lon) / 2.0
+        # Midpoint ETA Callout Tag on actual road path
+        mid_idx = len(remaining_waypoints) // 2
+        mid_pt = remaining_waypoints[mid_idx]
         eta_tag_html = f"""
         <div style="background: rgba(15,23,42,0.92); color: #38BDF8; border: 1px solid #38BDF8; border-radius: 12px; padding: 2px 8px; font-size: 10px; font-weight: 800; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.5);">
             ⚡ {dist_km:.1f} km • ETA {eta_mins:.1f}m
         </div>
         """
         folium.Marker(
-            location=[mid_traj_lat, mid_traj_lon],
+            location=[mid_pt[0], mid_pt[1]],
             icon=folium.DivIcon(html=eta_tag_html, icon_size=(80, 20), icon_anchor=(40, 10))
         ).add_to(m)
 
@@ -341,16 +363,27 @@ def build_fleet_overview_map(
     """
     Build a comprehensive city-wide tactical emergency map for Delhi NCR.
     Plots all active incidents with pulsing beacons, all responder units,
-    and active dispatch corridors.
+    and active road-following dispatch corridors.
+    Zero API key required (OpenStreetMap).
     """
-    tiles_url = DARK_TILES_URL if is_dark else LIGHT_TILES_URL
     m = folium.Map(
         location=[28.6250, 77.2000],
         zoom_start=zoom_start,
-        tiles=tiles_url,
-        attr=CARTO_ATTR,
+        tiles=OSM_TILES,
         control_scale=True
     )
+    if is_dark:
+        dark_tile_css = """
+        <style>
+        .leaflet-tile {
+            filter: brightness(0.65) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7) !important;
+        }
+        .leaflet-container {
+            background: #0B1320 !important;
+        }
+        </style>
+        """
+        m.get_root().html.add_child(folium.Element(dark_tile_css))
 
     # Unit Coordinates Index
     unit_map = {}
@@ -416,21 +449,22 @@ def build_fleet_overview_map(
                 tooltip=f"Incident {inc.id} [{urg_cfg['label']}] - {inc.location_text}"
             ).add_to(m)
 
-    # Active Dispatch Mission Lines
+    # Active Dispatch Mission Lines (Follow street road network)
     for disp in dispatches:
         if disp.status in ["assigned", "dispatched", "en_route"] and disp.incident_id in incident_map and disp.unit_id in unit_map:
             u = unit_map[disp.unit_id]
             inc = incident_map[disp.incident_id]
             srv_cfg = SERVICE_CONFIG.get(u.service_type, SERVICE_CONFIG["police"])
+            road_wps = get_road_route_waypoints(u.current_lat, u.current_lon, inc.latitude, inc.longitude)
             AntPath(
-                locations=[[u.current_lat, u.current_lon], [inc.latitude, inc.longitude]],
+                locations=road_wps if len(road_wps) >= 2 else [[u.current_lat, u.current_lon], [inc.latitude, inc.longitude]],
                 color=srv_cfg["color"],
                 pulse_color="#FFFFFF" if is_dark else "#0F172A",
                 weight=3.5,
                 opacity=0.85,
                 dash_array=[8, 16],
                 delay=1000,
-                tooltip=f"Corridor: {u.unit_name} → {inc.id} ({disp.distance_km:.1f} km • ETA {disp.eta_minutes:.1f}m)"
+                tooltip=f"Street Corridor: {u.unit_name} → {inc.id} ({disp.distance_km:.1f} km • ETA {disp.eta_minutes:.1f}m)"
             ).add_to(m)
 
     return m
@@ -704,4 +738,252 @@ def render_tactical_comms_console(
             </div>
             """
             st.markdown(feed_html, unsafe_allow_html=True)
+
+
+def render_tactical_voice_call_panel(
+    db: Any,
+    incident: Any,
+    unit: Any,
+    assignment: Any,
+    is_dark: bool = True,
+    actor_id: str = "Dispatcher"
+):
+    """
+    Render live Tactical Duplex Voice Call console connecting CAD Dispatch Control
+    directly to the Service Vehicle Commander in transit.
+    """
+    import streamlit as st
+    from sahaay.audit import log_audit_event
+    from sahaay.dispatch.simulation import escalate_unit_response
+    from sahaay.ui.audio import get_radio_chirp_b64
+
+    # Play radio connect tone if requested
+    if st.session_state.get("play_radio_chirp"):
+        st.session_state.play_radio_chirp = False
+        try:
+            chirp_b64 = get_radio_chirp_b64()
+            st.markdown(
+                f'<audio autoplay style="display:none;"><source src="data:audio/wav;base64,{chirp_b64}" type="audio/wav"></audio>',
+                unsafe_allow_html=True
+            )
+        except Exception:
+            pass
+
+    if "voice_call_dialogue" not in st.session_state:
+        st.session_state.voice_call_dialogue = {}
+
+    if incident.id not in st.session_state.voice_call_dialogue:
+        now_str = datetime.datetime.utcnow().strftime("%H:%M:%S UTC")
+        st.session_state.voice_call_dialogue[incident.id] = [
+            {
+                "timestamp": now_str,
+                "speaker": f"Commander Officer Sharma ({unit.call_sign})",
+                "role": "officer",
+                "text": f"CAD Dispatch, Commander Sharma on radio. We are rolling along the street corridor at {unit.speed_kmh:.0f} km/h with siren standby. What is the current situational directive for {incident.location_text or 'the victim location'}?"
+            }
+        ]
+
+    panel_bg = "#0B1528" if is_dark else "#F0FDF4"
+    border_color = "#10B981" if is_dark else "#86EFAC"
+    text_color = "#F8FAFC" if is_dark else "#0F172A"
+    sub_color = "#94A3B8" if is_dark else "#475569"
+
+    eq_animation_css = """
+    <style>
+    @keyframes eqBar {
+        0% { height: 4px; }
+        50% { height: 18px; }
+        100% { height: 6px; }
+    }
+    .eq-pulse-1 { animation: eqBar 0.7s infinite ease-in-out; }
+    .eq-pulse-2 { animation: eqBar 0.5s infinite 0.1s ease-in-out; }
+    .eq-pulse-3 { animation: eqBar 0.8s infinite 0.2s ease-in-out; }
+    .eq-pulse-4 { animation: eqBar 0.6s infinite 0.3s ease-in-out; }
+    .eq-pulse-5 { animation: eqBar 0.9s infinite 0.15s ease-in-out; }
+    </style>
+    """
+    st.markdown(eq_animation_css, unsafe_allow_html=True)
+
+    header_html = f"""
+    <div style="background: {panel_bg}; border: 2px solid {border_color}; border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(16,185,129,0.25);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 14px; height: 14px; border-radius: 50%; background: #10B981; box-shadow: 0 0 12px #10B981;"></div>
+                <div>
+                    <div style="font-size: 16px; font-weight: 900; color: #10B981; letter-spacing: 0.03em;">
+                        🟢 TACTICAL DUPLEX VOICE CALL ACTIVE
+                    </div>
+                    <div style="font-size: 12px; color: {sub_color}; margin-top: 1px;">
+                        Connected to <b>{unit.unit_name} [{unit.call_sign}]</b> • Frequency: 462.550 MHz (AES-256 Encrypted)
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="display: flex; align-items: flex-end; gap: 3px; height: 20px; padding: 2px 6px; background: rgba(16,185,129,0.15); border-radius: 4px;">
+                    <span class="eq-pulse-1" style="display:inline-block; width: 3.5px; height: 10px; background: #10B981; border-radius: 1px;"></span>
+                    <span class="eq-pulse-2" style="display:inline-block; width: 3.5px; height: 16px; background: #10B981; border-radius: 1px;"></span>
+                    <span class="eq-pulse-3" style="display:inline-block; width: 3.5px; height: 20px; background: #10B981; border-radius: 1px;"></span>
+                    <span class="eq-pulse-4" style="display:inline-block; width: 3.5px; height: 12px; background: #10B981; border-radius: 1px;"></span>
+                    <span class="eq-pulse-5" style="display:inline-block; width: 3.5px; height: 18px; background: #10B981; border-radius: 1px;"></span>
+                </div>
+                <div style="font-size: 13px; font-weight: 800; color: #10B981; font-family: monospace;">
+                    CARRIER: 16kHz PCM
+                </div>
+            </div>
+        </div>
+    </div>
+    """
+    st.markdown(header_html, unsafe_allow_html=True)
+
+    # Situational Voice Directives Grid
+    st.markdown(
+        f"<div style='font-size: 13px; font-weight: 800; color: {text_color}; margin-bottom: 6px;'>"
+        f"🎙️ TRANSMIT VOICE INSTRUCTION TO COMMANDER OVER LINE:"
+        f"</div>",
+        unsafe_allow_html=True
+    )
+
+    call_cols = st.columns(5)
+    voice_orders = [
+        {
+            "id": "CALL_CODE3",
+            "btn": "🚨 Expedite Code 3",
+            "disp_voice": "Control to Officer Sharma: Urgent situational escalation! Upgrade to Code 3 immediately. Activate dual-tone sirens and strobe lightbar. Expedite transit along the avenue corridor!",
+            "officer_resp": "Copy Code 3 escalation dispatch! Sirens and optical warnings engaged now. Overtaking traffic, speed boosted to 75 km/h. ETA revised down to 2 mins!",
+            "boost": 25.0
+        },
+        {
+            "id": "CALL_HOSTILE",
+            "btn": "🛑 Hold Perimeter",
+            "disp_voice": "Control to Officer Sharma: Extreme caution! Caller reports antagonist is armed and volatile on premises. DO NOT breach alone. Hold a 150m standoff perimeter and await armed backup!",
+            "officer_resp": "Understood Dispatch! Staging PCR-14 at outer checkpoint (150m standoff). Visual contact maintained on building. Standing by for armed tactical unit.",
+            "boost": 0.0
+        },
+        {
+            "id": "CALL_ALS",
+            "btn": "🫀 Medical Trauma",
+            "disp_voice": "Control to Unit Crew: Medical alert! Patient has entered agonal breathing with failing vitals. Stage Bag-Valve-Mask and automated defibrillator for immediate entry!",
+            "officer_resp": "Paramedic team acknowledged! AED charged and trauma crash pack ready for immediate resuscitation on arrival.",
+            "boost": 15.0
+        },
+        {
+            "id": "CALL_COVERT",
+            "btn": "🚪 Silent Approach",
+            "disp_voice": "Control to Officer Sharma: Domestic dispute active. Suspect unaware police were alerted. Cut sirens 400m prior to location. Approach rear entrance stealthily.",
+            "officer_resp": "Copy silent run! Sirens cut, running blacked-out stealth beacon. Positioning for rear lane entry quietly.",
+            "boost": -10.0
+        },
+        {
+            "id": "CALL_HAZMAT",
+            "btn": "🧪 Hazmat Protocol",
+            "disp_voice": "Control to Crew: Hazmat directive! Strong chemical odor and flammable vapor reported. Approach upwind from North entrance. Don Level B respiratory masks!",
+            "officer_resp": "Upwind approach confirmed! Crew donning SCBA respirators right now. Gas analyzer armed.",
+            "boost": 0.0
+        }
+    ]
+
+    for idx, vo in enumerate(voice_orders):
+        with call_cols[idx]:
+            if st.button(vo["btn"], key=f"vcall_btn_{incident.id}_{vo['id']}", use_container_width=True):
+                now_str = datetime.datetime.utcnow().strftime("%H:%M:%S UTC")
+                st.session_state.voice_call_dialogue[incident.id].append({
+                    "timestamp": now_str,
+                    "speaker": "CAD Dispatcher (You)",
+                    "role": "dispatcher",
+                    "text": vo["disp_voice"]
+                })
+                st.session_state.voice_call_dialogue[incident.id].append({
+                    "timestamp": now_str,
+                    "speaker": f"Commander Officer Sharma ({unit.call_sign})",
+                    "role": "officer",
+                    "text": vo["officer_resp"]
+                })
+
+                if vo["boost"] != 0.0:
+                    escalate_unit_response(
+                        db=db,
+                        assignment_id=assignment.id,
+                        code_3=vo["boost"] > 0,
+                        speed_boost=abs(vo["boost"]),
+                        actor_id=actor_id
+                    )
+
+                log_audit_event(
+                    db=db,
+                    actor_id=actor_id,
+                    actor_role="dispatcher",
+                    action="TACTICAL_VOICE_CALL_DIRECTIVE",
+                    object_type="dispatch",
+                    object_id=str(assignment.id),
+                    after_state={"directive": vo["id"], "instruction": vo["disp_voice"]},
+                    reason=f"Spoke situational directive {vo['id']} to Officer Sharma"
+                )
+                st.session_state.play_radio_chirp = True
+                st.rerun()
+
+    # Custom voice order input + Hang up button
+    col_v_in, col_hang = st.columns([3, 1], gap="small")
+    with col_v_in:
+        custom_voice_text = st.text_input(
+            "Speak Custom Tactical Order to Field Commander:",
+            placeholder="e.g. Officer Sharma, caller says victim is on second floor balcony...",
+            key=f"voice_custom_{incident.id}"
+        )
+        if st.button("🎙️ Speak Directive into Radio Line", key=f"speak_btn_{incident.id}", type="primary"):
+            if custom_voice_text.strip():
+                now_str = datetime.datetime.utcnow().strftime("%H:%M:%S UTC")
+                officer_reply = generate_unit_tactical_acknowledgment(unit.unit_name, unit.call_sign, custom_voice_text.strip())
+                st.session_state.voice_call_dialogue[incident.id].append({
+                    "timestamp": now_str,
+                    "speaker": "CAD Dispatcher (You)",
+                    "role": "dispatcher",
+                    "text": custom_voice_text.strip()
+                })
+                st.session_state.voice_call_dialogue[incident.id].append({
+                    "timestamp": now_str,
+                    "speaker": f"Commander Officer Sharma ({unit.call_sign})",
+                    "role": "officer",
+                    "text": officer_reply
+                })
+                st.session_state.play_radio_chirp = True
+                st.rerun()
+
+    with col_hang:
+        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+        if st.button("🔴 Hang Up / End Call", key=f"hangup_btn_{incident.id}", use_container_width=True):
+            st.session_state.active_vehicle_call = False
+            st.session_state.play_radio_chirp = False
+            st.info("Tactical voice call disconnected. Channel returned to standby.")
+            st.rerun()
+
+    # Live Call Dialogue Feed
+    st.markdown(
+        f"<div style='font-size: 13px; font-weight: 800; color: {text_color}; margin-top: 10px; margin-bottom: 6px;'>📞 ACTIVE VOICE CALL DIALOGUE (TRANSCRIPT):</div>",
+        unsafe_allow_html=True
+    )
+    dialogue_list = st.session_state.voice_call_dialogue.get(incident.id, [])
+    for msg in reversed(dialogue_list):
+        if msg["role"] == "dispatcher":
+            box_bg = "rgba(56, 189, 248, 0.12)" if is_dark else "#F0F9FF"
+            border_c = "#38BDF8"
+            tag_color = "#38BDF8"
+            icon = "🎙️"
+        else:
+            box_bg = "rgba(16, 185, 129, 0.12)" if is_dark else "#F0FDF4"
+            border_c = "#10B981"
+            tag_color = "#10B981"
+            icon = "👮"
+
+        st.markdown(
+            f"""
+            <div style="background: {box_bg}; border-left: 4px solid {border_c}; border-radius: 6px; padding: 8px 12px; margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                    <span style="font-size: 11px; font-weight: 800; color: {tag_color};">{icon} {msg['speaker']}</span>
+                    <span style="font-size: 10px; color: {sub_color};">{msg['timestamp']}</span>
+                </div>
+                <div style="font-size: 12px; color: {text_color}; font-weight: 500;">{msg['text']}</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 

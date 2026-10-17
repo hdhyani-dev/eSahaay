@@ -8,6 +8,7 @@ from sahaay.models import ResponseUnit, DispatchAssignment, Incident
 from sahaay.dispatch.distance import calculate_haversine_km, estimate_route_km
 from sahaay.dispatch.eta import compute_eta_details
 from sahaay.audit import log_audit_event
+from sahaay.dispatch.road_router import get_road_route_waypoints, advance_vehicle_along_road
 
 STATUS_LIFECYCLE = [
     "assigned",
@@ -173,14 +174,20 @@ def advance_unit_towards_incident(
         if not assignment.en_route_at:
             assignment.en_route_at = now
 
-    # Interpolate unit position
-    unit.current_lat += (target_lat - unit.current_lat) * step_fraction
-    unit.current_lon += (target_lon - unit.current_lon) * step_fraction
+    # Advance along actual street road network corridor
+    waypoints = get_road_route_waypoints(unit.current_lat, unit.current_lon, target_lat, target_lon)
+    new_lat, new_lon, rem_km, arrived = advance_vehicle_along_road(
+        waypoints=waypoints,
+        current_lat=unit.current_lat,
+        current_lon=unit.current_lon,
+        step_fraction=step_fraction
+    )
+
+    unit.current_lat = new_lat
+    unit.current_lon = new_lon
 
     cur_dist = calculate_haversine_km(unit.current_lat, unit.current_lon, target_lat, target_lon)
-    arrived = False
-
-    if cur_dist <= 0.25:
+    if arrived or cur_dist <= 0.25:
         # Snap to destination
         unit.current_lat = target_lat
         unit.current_lon = target_lon
@@ -191,7 +198,7 @@ def advance_unit_towards_incident(
         eta_minutes = 0.0
         arrived = True
     else:
-        route_km = estimate_route_km(unit.current_lat, unit.current_lon, target_lat, target_lon)
+        route_km = rem_km if rem_km > 0.0 else estimate_route_km(unit.current_lat, unit.current_lon, target_lat, target_lon)
         eta_info = compute_eta_details(route_km, unit.speed_kmh)
         eta_minutes = eta_info["eta_minutes"]
 

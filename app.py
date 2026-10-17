@@ -87,6 +87,7 @@ from sahaay.ui.dispatch_map import (
     build_fleet_overview_map,
     render_telemetry_hud,
     render_tactical_comms_console,
+    render_tactical_voice_call_panel,
     TACTICAL_PRESET_DIRECTIVES,
     generate_unit_tactical_acknowledgment
 )
@@ -1979,10 +1980,48 @@ def page_dispatch():
             # 1. Real-Time Telemetry HUD Ribbon
             render_telemetry_hud(unit, ass, is_dark=is_dark)
 
-            # 2. Live Tactical Mission Corridor & Moving Unit Map
+            # Direct Tactical Voice Call with Service Vehicle Control
+            call_active = st.session_state.get("active_vehicle_call", False)
+            col_vbtn, col_vstatus = st.columns([1.8, 1.2], gap="small")
+            with col_vbtn:
+                if not call_active:
+                    if st.button("📞 Call Service Vehicle Control (Direct Voice Line)", key=f"start_call_{ass.id}", type="primary", use_container_width=True):
+                        st.session_state.active_vehicle_call = True
+                        st.session_state.play_radio_chirp = True
+                        st.rerun()
+                else:
+                    if st.button("🔴 Call Active with Vehicle Commander — Click to End", key=f"stop_call_{ass.id}", use_container_width=True):
+                        st.session_state.active_vehicle_call = False
+                        st.session_state.play_radio_chirp = False
+                        st.rerun()
+            with col_vstatus:
+                call_badge_bg = "rgba(16, 185, 129, 0.15)" if is_dark else "#DCFCE7"
+                call_badge_border = "#10B981" if is_dark else "#86EFAC"
+                call_badge_color = "#10B981" if is_dark else "#166534"
+                st.markdown(
+                    f"""
+                    <div style="background: {call_badge_bg}; border: 1px solid {call_badge_border}; border-radius: 6px; padding: 7px 12px; text-align: center; font-size: 11px; font-weight: 800; color: {call_badge_color};">
+                        {'🟢 DUPLEX AUDIO CALL IN PROGRESS' if call_active else '📻 462.550 MHz VOICE STANDBY (CLICK TO CALL)'}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            # Render Voice Call Interface when call is open
+            if call_active:
+                render_tactical_voice_call_panel(
+                    db=db,
+                    incident=incident,
+                    unit=unit,
+                    assignment=ass,
+                    is_dark=is_dark,
+                    actor_id=st.session_state.user["employee_id"]
+                )
+
+            # 2. Live Tactical Mission Corridor & Moving Unit Map (Roads-Only Navigation)
             st.markdown(
                 f"<div style='font-size: 14px; font-weight: 800; color: {'#38BDF8' if is_dark else '#173B57'}; margin-bottom: 6px;'>"
-                f"🛰️ LIVE MISSION CORRIDOR & GPS TRAJECTORY: {unit.unit_name} &rarr; {incident.id} [VICTIM LOCATION]"
+                f"🛰️ LIVE MISSION CORRIDOR & GPS TRAJECTORY (ROAD-NETWORK NAVIGATION): {unit.unit_name} &rarr; {incident.id} [VICTIM LOCATION]"
                 f"</div>",
                 unsafe_allow_html=True
             )
@@ -1994,10 +2033,10 @@ def page_dispatch():
                 key=f"disp_map_{ass.id}_{round(unit.current_lat, 4)}_{round(unit.current_lon, 4)}"
             )
 
-            # 3. Service Vehicle Live Movement & Navigation Controls
+            # 3. Service Vehicle Live Movement & Navigation Controls (Following Street Roads)
             st.markdown(
                 f"<div style='font-size: 13px; font-weight: 800; margin-top: 10px; margin-bottom: 6px; color: {'#F8FAFC' if is_dark else '#0F172A'};'>"
-                f"📡 SERVICE VEHICLE MOVEMENT & NAVIGATION CONTROLS:"
+                f"🚗 SERVICE VEHICLE ROAD NAVIGATION CONTROLS (ADVANCE ALONG STREETS & ROADS):"
                 f"</div>",
                 unsafe_allow_html=True
             )
@@ -2005,8 +2044,8 @@ def page_dispatch():
 
             with col_mv1:
                 if ass.status not in ["arrived", "completed"]:
-                    if st.button("📡 Advance Vehicle Towards Victim (+25% Hop)", key=f"adv_{ass.id}", type="primary", use_container_width=True):
-                        res = advance_unit_towards_incident(db, ass.id, step_fraction=0.30, actor_id=st.session_state.user["employee_id"])
+                    if st.button("🚗 Advance Vehicle Along Road (+25% Hop)", key=f"adv_{ass.id}", type="primary", use_container_width=True):
+                        res = advance_unit_towards_incident(db, ass.id, step_fraction=0.25, actor_id=st.session_state.user["employee_id"])
                         if res.get("arrived"):
                             st.success(f"🚨 {unit.unit_name} HAS ARRIVED ON SCENE AT VICTIM LOCATION!")
                             now_str = datetime.datetime.utcnow().strftime("%H:%M:%S UTC")
@@ -2015,24 +2054,24 @@ def page_dispatch():
                                     "timestamp": now_str,
                                     "sender": f"UNIT {unit.call_sign} MDT",
                                     "badge": "ON SCENE",
-                                    "text": f"[{unit.call_sign} MDT]: UNIT HAS ARRIVED AT SCENE. Vehicle secured, responders making immediate entry.",
-                                    "unit_ack": "On-scene arrival confirmed via GPS telemetry."
+                                    "text": f"[{unit.call_sign} MDT]: UNIT HAS ARRIVED AT SCENE VIA STREET ROUTE. Vehicle secured at curbside.",
+                                    "unit_ack": "On-scene arrival confirmed via road telemetry."
                                 })
                         else:
-                            st.info(f"Vehicle advanced to {res['unit_lat']}, {res['unit_lon']}. Remaining: {res['distance_km']} km (ETA: {res['eta_minutes']}m)")
+                            st.info(f"Vehicle advanced along road network to {res['unit_lat']}, {res['unit_lon']}. Remaining: {res['distance_km']} km (ETA: {res['eta_minutes']}m)")
                         st.rerun()
                 else:
                     st.success(f"✅ Vehicle Status: {ass.status.upper()}")
 
             with col_mv2:
                 if ass.status not in ["arrived", "completed"]:
-                    if st.button("▶️ Drive to Scene (Live Transit Simulation)", key=f"drive_{ass.id}", use_container_width=True):
-                        with st.spinner("Simulating emergency transit along mission corridor..."):
-                            res = advance_unit_towards_incident(db, ass.id, step_fraction=0.65, actor_id=st.session_state.user["employee_id"])
+                    if st.button("▶️ Drive to Scene (Street Route Simulation)", key=f"drive_{ass.id}", use_container_width=True):
+                        with st.spinner("Simulating emergency transit along road network..."):
+                            res = advance_unit_towards_incident(db, ass.id, step_fraction=0.60, actor_id=st.session_state.user["employee_id"])
                             if res.get("arrived"):
-                                st.success("🚨 UNIT ARRIVED ON SCENE!")
+                                st.success("🚨 UNIT ARRIVED ON SCENE VIA ROAD NETWORK!")
                             else:
-                                st.info(f"Transit advanced: {res['distance_km']} km remaining.")
+                                st.info(f"Transit advanced along street route: {res['distance_km']} km remaining.")
                         st.rerun()
 
             with col_mv3:
