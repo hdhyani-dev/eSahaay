@@ -107,8 +107,12 @@ if st.button(theme_icon, key="top_right_theme_toggle", help=f"Toggle Theme (Curr
     st.session_state.theme_mode = next_theme
     st.rerun()
 
-# Initialize Database on startup
+# Initialize and auto-seed database on startup if empty
 init_database()
+try:
+    seed_database()
+except Exception:
+    pass
 
 # Session State Initialization
 if "user" not in st.session_state:
