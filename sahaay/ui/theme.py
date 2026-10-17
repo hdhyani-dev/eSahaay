@@ -469,6 +469,176 @@ def get_theme_css(mode: str = "dark") -> str:
             color: #7E22CE !important;
             border: 1px solid rgba(168, 85, 247, 0.3) !important;
         }
+
+        /* =====================================================================
+           LIGHT MODE FORM CONTROLS & INPUT VISIBILITY OVERRIDES
+           Enforce pure white background & crisp dark text on all text inputs,
+           passwords (Badge ID, PIN), search bars, and dropdown selectboxes.
+           ===================================================================== */
+        /* Text inputs, Password inputs, Search boxes, and Number inputs */
+        div[data-testid="stTextInput"],
+        div[data-testid="stTextInputRootElement"],
+        div[data-testid="stTextInput"] > div,
+        div[data-testid="stTextInputRootElement"] > div {
+            color: #142238 !important;
+        }
+
+        div[data-testid="stTextInput"] label,
+        div[data-testid="stTextInput"] label p,
+        div[data-testid="stSelectbox"] label,
+        div[data-testid="stSelectbox"] label p,
+        div[data-testid="stMultiSelect"] label,
+        div[data-testid="stMultiSelect"] label p {
+            color: #142238 !important;
+            font-weight: 700 !important;
+        }
+
+        /* Outer Box for Text & Password Inputs (Badge ID, PIN, Search) */
+        div[data-testid="stTextInput"] div[data-baseweb="input"],
+        div[data-testid="stTextInput"] div[data-baseweb="base-input"],
+        div[data-testid="stTextInputRootElement"] div[data-baseweb="input"],
+        div[data-testid="stTextInputRootElement"] div[data-baseweb="base-input"],
+        div[data-baseweb="input"],
+        div[data-baseweb="base-input"] {
+            background-color: #FFFFFF !important;
+            background: #FFFFFF !important;
+            border: 1.5px solid #CBD5E1 !important;
+            border-radius: 8px !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        div[data-baseweb="input"]:focus-within,
+        div[data-baseweb="base-input"]:focus-within,
+        div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within {
+            border-color: #007F9E !important;
+            box-shadow: 0 0 0 3px rgba(0, 127, 158, 0.15) !important;
+        }
+
+        /* Inner container wrappers */
+        div[data-baseweb="input"] > div,
+        div[data-baseweb="base-input"] > div {
+            background-color: #FFFFFF !important;
+            background: #FFFFFF !important;
+        }
+
+        /* Actual Text & Password Input Fields */
+        div[data-testid="stTextInput"] input,
+        div[data-testid="stTextInputRootElement"] input,
+        div[data-baseweb="input"] input,
+        div[data-baseweb="base-input"] input,
+        input[type="text"],
+        input[type="password"],
+        input {
+            background-color: #FFFFFF !important;
+            background: #FFFFFF !important;
+            color: #142238 !important;
+            caret-color: #007F9E !important;
+            font-weight: 600 !important;
+            font-size: 13.5px !important;
+        }
+
+        /* Placeholder */
+        div[data-testid="stTextInput"] input::placeholder,
+        div[data-baseweb="input"] input::placeholder,
+        input::placeholder,
+        textarea::placeholder {
+            color: #64748B !important;
+            opacity: 1 !important;
+            font-weight: 400 !important;
+        }
+
+        /* Password reveal / clear / action icons inside inputs */
+        div[data-baseweb="input"] button,
+        div[data-baseweb="input"] svg,
+        div[data-baseweb="input"] path {
+            color: #52647B !important;
+            fill: #52647B !important;
+        }
+
+        /* Selectboxes: Emergency Category, Resolution Status, Priority Level */
+        div[data-testid="stSelectbox"],
+        div[data-testid="stSelectbox"] > div,
+        div[data-testid="stSelectbox"] div[data-baseweb="select"],
+        div[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+        div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:first-child,
+        div[data-baseweb="select"],
+        div[data-baseweb="select"] > div,
+        div[data-baseweb="select"] > div:first-child,
+        div[data-testid="stMultiSelect"] div[data-baseweb="select"],
+        div[data-testid="stMultiSelect"] div[data-baseweb="select"] > div {
+            background-color: #FFFFFF !important;
+            background: #FFFFFF !important;
+            border: 1.5px solid #CBD5E1 !important;
+            border-radius: 8px !important;
+            color: #142238 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        div[data-baseweb="select"]:focus-within,
+        div[data-baseweb="select"] > div:focus-within {
+            border-color: #007F9E !important;
+            box-shadow: 0 0 0 3px rgba(0, 127, 158, 0.15) !important;
+        }
+
+        /* Text and content inside selectbox controls */
+        div[data-baseweb="select"] div,
+        div[data-baseweb="select"] span,
+        div[data-baseweb="select"] p,
+        div[data-baseweb="select"] [role="combobox"],
+        div[data-baseweb="select"] input {
+            color: #142238 !important;
+            background-color: transparent !important;
+            font-weight: 600 !important;
+            font-size: 13.5px !important;
+        }
+
+        /* Select dropdown arrow icon */
+        div[data-baseweb="select"] svg,
+        div[data-baseweb="select"] path {
+            fill: #52647B !important;
+            color: #52647B !important;
+        }
+
+        /* Dropdown Popover Listbox (when selectbox is clicked open) */
+        div[data-baseweb="popover"],
+        div[data-baseweb="popover"] > div,
+        div[data-baseweb="popover"] ul,
+        div[data-baseweb="popover"] ul[role="listbox"],
+        ul[role="listbox"],
+        div[data-baseweb="menu"],
+        div[data-baseweb="menu"] ul {
+            background-color: #FFFFFF !important;
+            background: #FFFFFF !important;
+            border: 1.5px solid #CBD5E1 !important;
+            border-radius: 8px !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+            color: #142238 !important;
+        }
+
+        /* Options inside the open dropdown */
+        li[role="option"],
+        div[data-baseweb="popover"] li,
+        ul[role="listbox"] li {
+            background-color: #FFFFFF !important;
+            background: #FFFFFF !important;
+            color: #142238 !important;
+        }
+
+        li[role="option"] *,
+        div[data-baseweb="popover"] li * {
+            color: #142238 !important;
+        }
+
+        /* Hovered & Selected Dropdown Option */
+        li[role="option"]:hover,
+        li[role="option"]:hover *,
+        li[role="option"][aria-selected="true"],
+        li[role="option"][aria-selected="true"] * {
+            background-color: #E8EFF7 !important;
+            background: #E8EFF7 !important;
+            color: #007F9E !important;
+            font-weight: 700 !important;
+        }
         """
 
     return f"""
@@ -755,19 +925,22 @@ def get_theme_css(mode: str = "dark") -> str:
     div[data-baseweb="input"],
     div[data-baseweb="base-input"] {{
         background-color: {'#19283D' if is_dark else '#FFFFFF'} !important;
+        background: {'#19283D' if is_dark else '#FFFFFF'} !important;
         border: 1.5px solid {'#304158' if is_dark else '#CBD5E1'} !important;
         border-radius: 8px !important;
     }}
 
     div[data-testid="stTextInput"] input,
     div[data-baseweb="input"] input,
+    div[data-baseweb="base-input"] input,
     input, textarea {{
-        background-color: transparent !important;
-        color: {'#F1F5F9' if is_dark else '#000000'} !important;
-        caret-color: {'#22D3EE' if is_dark else '#000000'} !important;
+        background-color: {'#19283D' if is_dark else '#FFFFFF'} !important;
+        background: {'#19283D' if is_dark else '#FFFFFF'} !important;
+        color: {'#F1F5F9' if is_dark else '#142238'} !important;
+        caret-color: {'#22D3EE' if is_dark else '#007F9E'} !important;
         cursor: text !important;
         font-size: 13.5px !important;
-        font-weight: 500 !important;
+        font-weight: 600 !important;
     }}
 
     div[data-testid="stTextInput"] div[data-baseweb="input"],
@@ -781,9 +954,12 @@ def get_theme_css(mode: str = "dark") -> str:
     input[placeholder*="Search"],
     input[aria-label*="Search"],
     input[type="text"] {{
-        color: {'#F1F5F9' if is_dark else '#000000'} !important;
-        caret-color: {'#22D3EE' if is_dark else '#000000'} !important;
+        background-color: {'#19283D' if is_dark else '#FFFFFF'} !important;
+        background: {'#19283D' if is_dark else '#FFFFFF'} !important;
+        color: {'#F1F5F9' if is_dark else '#142238'} !important;
+        caret-color: {'#22D3EE' if is_dark else '#007F9E'} !important;
         cursor: text !important;
+        font-weight: 600 !important;
     }}
 
     div[data-testid="stTextInput"] input::placeholder,
@@ -797,8 +973,11 @@ def get_theme_css(mode: str = "dark") -> str:
 
     div[data-testid="stSelectbox"] div[data-baseweb="select"],
     div[data-baseweb="select"],
-    div[data-baseweb="select"] > div {{
+    div[data-baseweb="select"] > div,
+    div[data-testid="stMultiSelect"] div[data-baseweb="select"],
+    div[data-testid="stMultiSelect"] div[data-baseweb="select"] > div {{
         background-color: {'#19283D' if is_dark else '#FFFFFF'} !important;
+        background: {'#19283D' if is_dark else '#FFFFFF'} !important;
         border: 1.5px solid {'#304158' if is_dark else '#CBD5E1'} !important;
         border-radius: 8px !important;
         color: {'#F1F5F9' if is_dark else '#142238'} !important;
