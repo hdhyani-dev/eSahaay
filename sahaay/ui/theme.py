@@ -474,12 +474,48 @@ def get_theme_css(mode: str = "dark") -> str:
     return f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 
-    /* Typography & Base Reset (Inter preferred with clean sans-serif fallbacks) */
-    html, body, p, span, div, label, input, textarea, button {{
+    /* Typography & Base Reset */
+    html, body, p, label, input, textarea {{
         font-family: 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+    }}
+
+    /* Apply typography to general text containers while explicitly preserving icon glyph fonts */
+    div:not([data-testid="stIconMaterial"]):not([class*="material-symbols"]):not([class*="material-icons"]),
+    span:not([data-testid="stIconMaterial"]):not([class*="material-symbols"]):not([class*="material-icons"]) {{
+        font-family: 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }}
+
+    /* Streamlit Material Icons & Password Eye Ligatures - Always intact and visible */
+    [data-testid="stIconMaterial"],
+    .material-symbols-rounded,
+    .material-symbols-outlined,
+    .material-icons,
+    [class*="material-symbols"],
+    [class*="material-icons"],
+    div[data-baseweb="input"] button,
+    div[data-baseweb="input"] button span,
+    div[data-baseweb="input"] button div,
+    div[data-testid="stTextInput"] button,
+    div[data-testid="stTextInput"] button span,
+    div[data-testid="stTextInput"] button div {{
+        font-family: 'Material Symbols Rounded', 'Material Icons', sans-serif !important;
+        font-weight: normal !important;
+        font-style: normal !important;
+        line-height: 1 !important;
+        letter-spacing: normal !important;
+        text-transform: none !important;
+        display: inline-block !important;
+        white-space: nowrap !important;
+        word-wrap: normal !important;
+        direction: ltr !important;
+        -webkit-font-feature-settings: 'liga' 1 !important;
+        font-feature-settings: 'liga' 1 !important;
+        -webkit-font-smoothing: antialiased !important;
+        visibility: visible !important;
     }}
 
     
@@ -750,19 +786,57 @@ def get_theme_css(mode: str = "dark") -> str:
         letter-spacing: -0.01em !important;
     }}
 
+    /* Text Inputs: Single outer border, clean background, no dark underline bars */
     div[data-testid="stTextInput"] div[data-baseweb="input"],
-    div[data-testid="stTextInput"] div[data-baseweb="base-input"],
-    div[data-baseweb="input"],
-    div[data-baseweb="base-input"] {{
+    div[data-baseweb="input"] {{
         background-color: {'#19283D' if is_dark else '#FFFFFF'} !important;
+        background: {'#19283D' if is_dark else '#FFFFFF'} !important;
         border: 1.5px solid {'#304158' if is_dark else '#CBD5E1'} !important;
         border-radius: 8px !important;
+        box-shadow: none !important;
+        overflow: hidden !important;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
     }}
 
+    /* Remove BaseWeb default pseudo-element underline bars, indicator bars & shadows */
+    div[data-testid="stTextInput"] div[data-baseweb="input"]::before,
+    div[data-testid="stTextInput"] div[data-baseweb="input"]::after,
+    div[data-baseweb="input"]::before,
+    div[data-baseweb="input"]::after,
+    div[data-baseweb="base-input"]::before,
+    div[data-baseweb="base-input"]::after {{
+        display: none !important;
+        content: none !important;
+        border: none !important;
+        box-shadow: none !important;
+    }}
+
+    /* Inner base-input wrapper: 100% transparent, NO borders, NO double outlines */
+    div[data-testid="stTextInput"] div[data-baseweb="base-input"],
+    div[data-baseweb="base-input"] {{
+        background-color: transparent !important;
+        background: transparent !important;
+        border: none !important;
+        border-bottom: none !important;
+        border-top: none !important;
+        border-left: none !important;
+        border-right: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        cursor: text !important;
+    }}
+
+    /* Input Element: Inherits clean background, correct text color */
     div[data-testid="stTextInput"] input,
     div[data-baseweb="input"] input,
     input, textarea {{
-        background-color: {'#19283D' if is_dark else '#FFFFFF'} !important;
+        background-color: transparent !important;
+        background: transparent !important;
+        border: none !important;
+        border-bottom: none !important;
+        outline: none !important;
+        box-shadow: none !important;
         color: {'#F1F5F9' if is_dark else '#142238'} !important;
         caret-color: {'#22D3EE' if is_dark else '#007F9E'} !important;
         cursor: text !important;
@@ -770,18 +844,20 @@ def get_theme_css(mode: str = "dark") -> str:
         font-weight: 500 !important;
     }}
 
-    div[data-testid="stTextInput"] div[data-baseweb="input"],
-    div[data-testid="stTextInput"] div[data-baseweb="base-input"] {{
-        cursor: text !important;
+    div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within,
+    div[data-baseweb="input"]:focus-within {{
+        border-color: {'#22D3EE' if is_dark else '#007F9E'} !important;
+        box-shadow: 0 0 0 1px {'#22D3EE' if is_dark else '#007F9E'} !important;
     }}
 
-    /* Search History input - ensure jet-black cursor and text in light mode */
+    /* Search History input - ensure crystal clear text and cursor */
     div[data-testid="stTextInput"]:has(input[placeholder*="Search"]) input,
     div[data-testid="stTextInput"]:has(input[aria-label*="Search"]) input,
     input[placeholder*="Search"],
     input[aria-label*="Search"],
     input[type="text"] {{
-        background-color: {'#19283D' if is_dark else '#FFFFFF'} !important;
+        background-color: transparent !important;
+        background: transparent !important;
         color: {'#F1F5F9' if is_dark else '#142238'} !important;
         caret-color: {'#22D3EE' if is_dark else '#007F9E'} !important;
         cursor: text !important;
@@ -796,13 +872,86 @@ def get_theme_css(mode: str = "dark") -> str:
         font-weight: 400 !important;
     }}
 
+    /* Password Visibility Toggle End-Enhancer Container & Eye Button */
+    div[data-baseweb="input"] > div:last-child,
+    div[data-baseweb="input"] > div:nth-child(2),
+    div[data-baseweb="base-input"] + div,
+    div[data-testid="stTextInput"] div[data-baseweb="input"] > div:last-child {{
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding-right: 6px !important;
+    }}
+
+    div[data-baseweb="input"] button,
+    div[data-testid="stTextInput"] button {{
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        color: {'#94A3B8' if is_dark else '#52647B'} !important;
+        padding: 4px 6px !important;
+        cursor: pointer !important;
+        border-radius: 4px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: color 0.15s ease !important;
+    }}
+
+    div[data-baseweb="input"] button:hover,
+    div[data-testid="stTextInput"] button:hover {{
+        background: transparent !important;
+        background-color: transparent !important;
+        color: {'#22D3EE' if is_dark else '#007F9E'} !important;
+        border: none !important;
+        box-shadow: none !important;
+    }}
+
+    div[data-baseweb="input"] button *,
+    div[data-testid="stTextInput"] button * {{
+        color: inherit !important;
+    }}
+
+    /* Selectbox Filters: Outer container is completely transparent & borderless. Only inner pill has border */
     div[data-testid="stSelectbox"] div[data-baseweb="select"],
-    div[data-baseweb="select"],
+    div[data-baseweb="select"] {{
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }}
+
+    div[data-testid="stSelectbox"] div[data-baseweb="select"]::before,
+    div[data-testid="stSelectbox"] div[data-baseweb="select"]::after,
+    div[data-baseweb="select"]::before,
+    div[data-baseweb="select"]::after {{
+        display: none !important;
+        content: none !important;
+        border: none !important;
+        box-shadow: none !important;
+    }}
+
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] > div,
     div[data-baseweb="select"] > div {{
         background-color: {'#19283D' if is_dark else '#FFFFFF'} !important;
+        background: {'#19283D' if is_dark else '#FFFFFF'} !important;
         border: 1.5px solid {'#304158' if is_dark else '#CBD5E1'} !important;
         border-radius: 8px !important;
         color: {'#F1F5F9' if is_dark else '#142238'} !important;
+        box-shadow: none !important;
+        transition: border-color 0.15s ease !important;
+    }}
+
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:hover,
+    div[data-baseweb="select"] > div:hover,
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:focus-within,
+    div[data-baseweb="select"] > div:focus-within {{
+        border-color: {'#22D3EE' if is_dark else '#007F9E'} !important;
     }}
 
     div[data-baseweb="select"] div,
